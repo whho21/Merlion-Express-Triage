@@ -1,7 +1,7 @@
 # Tasklist — Developer D
 
 **Owner:** To be assigned (A–D mapping pending)
-**Scope:** React frontend and shared evaluations
+**Scope:** React frontend, integration quality and shared evaluations
 
 ## Task Legend
 
@@ -21,7 +21,8 @@ The A–D to named-person mapping is still open in `delivery_RID.md` (item 1). U
 | 3 | Show resolved/candidate order, evidence, conflicts, recommendation and visible citations; connect to backend API | 18–23 Nov | ⏳ |
 | 4 | Support follow-up questions and session recovery after backend restart; never expose model key in browser | 24 Nov | ⏳ |
 | 5 | Build weekly driver/zone view with period selection and unknown-attribution display | 20–23 Nov | ⏳ |
-| 6 | Create one-command eval runner and result format; collect cases from A/B/C and produce sanitised results | 19–23 Nov | ⏳ |
-| 7 | Contribute at least four UI/integration cases; verify normal, ambiguous, unavailable, refusal and malformed responses | 24 Nov | ⏳ |
-| 8 | Coordinate cited-answer screenshots, failure demonstration, demo checklist and timed pitch evidence | 24–26 Nov | ⏳ |
-| 9 | Rehearse full UI/API flow and recovery on demo laptop; record blockers and final limitations | 26 Nov | ⏳ |
+| 6 | Build the one-command eval runner and result format; A/B/C supply and fix their own cases; consolidate sanitised results | 19–23 Nov | ⏳ |
+| 7 | Set up automated frontend lint/build and shared eval checks in CI if the instructor repository permits Actions; keep client data out of CI | 23 Nov | ⏳ |
+| 8 | Contribute at least four UI/integration cases and own a repeatable React-to-API smoke check for normal, ambiguous, unavailable, refusal and malformed responses | 24 Nov | ⏳ |
+| 9 | Supply cited-answer screenshots, UI demo steps and failure-state evidence to John; contribute to the demo checklist and pitch rehearsal | 24–26 Nov | ⏳ |
+| 10 | Own demo runbook and full-stack smoke test with C: startup, health, UI/API flow, restart and recovery; report blockers to John | 26 Nov | ⏳ |
