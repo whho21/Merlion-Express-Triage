@@ -31,6 +31,7 @@ docs/
 | [Developer D task list](01-Plans_Status/Developer-D_tasklist.md) | `01-Plans_Status/` | Track Developer D's tasks. |
 | [Name-A task list](01-Plans_Status/Name-A_tasklist.md) | `01-Plans_Status/` | Task list format and status legend. |
 | [Delivery RID log](01-Plans_Status/delivery_RID.md) | `01-Plans_Status/` | Track risks, issues and decisions. |
+| [Team work guide](01-Plans_Status/TEAM_WORK_GUIDE.md) | `01-Plans_Status/` | Daily Git, PR review, handoff and checkpoint workflow. |
 | [Architecture](02-Design/architecture.md) | `02-Design/` | Document the application architecture. |
 | [Technical contracts](02-Design/contracts.md) | `02-Design/` | Document agreed interfaces and data contracts. |
 | [Handoff template](03-Handoffs/Name_YYYY-MM-DD-topic.md) | `03-Handoffs/` | Record handoff scope, remaining work and next steps. |

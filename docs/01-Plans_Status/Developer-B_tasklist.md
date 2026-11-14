@@ -19,9 +19,9 @@ The A–D to named-person mapping is still open in `delivery_RID.md` (item 1). U
 | 1 | Audit SQL, tabular and GPS files; record counts, keys, duplicates, nulls, parse failures, join coverage and traps in `docs/05-Reviews/` | 19 Nov, 09:00 | ⏳ |
 | 2 | Draft evidence-backed client questions on missing guide/files, source authority and timezone; give John wording for the client log | 16–17 Nov | ⏳ |
 | 3 | Import the raw SQL dump and define repeatable loading commands; document counts and rejected records | 19 Nov, 09:00 | ⏳ |
-| 4 | Propose cleaned order/event keys, timestamp and postal-code rules; add Mermaid ER diagram to `docs/02-Design/architecture.md` | 19 Nov, 09:00 | ⏳ |
+| 4 | Propose cleaned order/event keys, candidate-order identity rules, timestamp and postal-code handling; add Mermaid ER diagram to `docs/02-Design/architecture.md` | 19 Nov, 09:00 | ⏳ |
 | 5 | Agree POD/rate handoff schema and source provenance with A; test loader using a synthetic sample | 17–20 Nov | ⏳ |
 | 6 | Build idempotent SQL, tabular, GPS and extracted-image loaders; reconcile source, loaded, rejected and duplicate counts | 23 Nov | ⏳ |
-| 7 | Implement cited delivery, POD, GPS-window and date-sensitive rate tools with honest missing/failure outcomes | 23 Nov | ⏳ |
-| 8 | Implement weekly complaint counts by driver/zone, period and unknown attribution; document definitions and verify totals | 23–24 Nov | ⏳ |
+| 7 | Implement candidate-order lookup and cited delivery, POD, GPS-window and date-sensitive rate tools; distinguish ambiguous, missing and failed outcomes | 23 Nov | ⏳ |
+| 8 | After the first cited complaint flow works, implement weekly complaint counts by driver/zone, period and unknown attribution; verify totals | 23–24 Nov | ⏳ |
 | 9 | Contribute at least six data-integrity/analytics eval cases, tests and telemetry; compile one-page `docs/04-Testing_Evals/data_quality_report.md` | 24–26 Nov | ⏳ |
