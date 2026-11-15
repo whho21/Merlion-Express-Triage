@@ -63,9 +63,9 @@ Default reviewer is the main consumer of the change; add another affected owner 
 | A — extraction/retrieval | B — loads POD/rate records | C for retrieval-tool or citation contract changes |
 | B — data/SQL | C — calls data tools | D for weekly-summary response changes |
 | C — API/agent | D — consumes the API | A or B for changes to their tool contracts |
-| D — React/integration/eval runner | C — supplies the API and uses eval results | B for weekly-view definitions |
+| D — React/HTTP routes/integration | C — supplies and reviews the service contract | B for weekly-view definitions |
 
-B owns candidate-order lookup and structured source identity; C owns clarification and orchestration. A/B attach verifiable source references and handle source-specific errors; C validates the final answer; D displays the evidence. John coordinates the pitch and checkpoint submission, while D owns the integrated smoke check and demo runbook. These boundaries keep one owner accountable for each handoff.
+B owns candidate-order lookup and structured source identity; C owns clarification and orchestration; D owns thin HTTP routes and validated request/response models. A/B attach verifiable source references and handle source-specific errors; C validates the final answer; D displays the evidence. John coordinates the pitch and checkpoint submission, while D owns the integrated smoke check and demo runbook. These boundaries keep one owner accountable for each handoff.
 
 Open a PR from the branch into the **instructor repository's `main`**. State the outcome, relevant task or RID entry, files affected, checks actually run, evidence, and known limitations. Link related handoffs. Request at least one teammate who did not author the change to review it. For shared contracts or data rules, include the consuming owner. Resolve comments and rerun checks after material changes.
 
@@ -79,7 +79,48 @@ Each owner updates `docs/01-Plans_Status/Developer-<A-D>_tasklist.md` at the end
 
 Anyone who identifies a new risk, active issue or needed decision adds or updates a row in `delivery_RID.md` with owner, date, next action and status. The decision owner records the agreed outcome and date when resolved. Put client questions and answers in `docs/00-Biz_Requirements/client_qa.md`; the RID log links to them rather than copying client data.
 
-A docs-only update may be committed and PR'd before unfinished code is ready. Start a **separate `docs/` branch from current `instructor/main`**; staging only documentation on a feature branch does not make its PR docs-only if that branch also contains code commits. If code work is uncommitted, use a separate worktree or preserve it safely before switching branches. Review the docs diff, push to `instructor`, and merge the docs PR after review. Keep docs updates concise and avoid conflicting edits to the same shared plan or contract.
+A docs-only update may be committed and PR'd before unfinished code is ready. Use a separate worktree so the coding branch and any unfinished code remain untouched. Staging only documentation on a feature branch does not make its PR docs-only if that branch also contains code commits.
+
+### Daily docs-only status procedure
+
+After the documentation scaffold is merged into instructor `main`, set up a docs worktree once from your project folder. Replace `A` and the example date with your role and today's Singapore date:
+
+```bash
+git fetch instructor
+git worktree add ../team2-docs -b docs/<Your_Name>-status-2026-11-16 instructor/main
+```
+
+In `../team2-docs`, follow these steps at the end of each workday:
+
+1. Update your `Developer-<A-D>_tasklist.md`: status, delivered work or PR link, next step and blocker. Update `delivery_RID.md` only when a risk, issue or decision changes.
+2. Stage the specific files and inspect the staged diff. Add the RID file only if it changed:
+
+   ```bash
+   git status --short
+   git add docs/01-Plans_Status/Developer-A_tasklist.md
+   # If the RID log changed, also run: git add docs/01-Plans_Status/delivery_RID.md
+   git diff --cached
+   git diff --cached --check
+   ```
+
+3. Ask your AI agent to review the staged changes against the plan, this guide, your task list and any relevant handoff. Resolve findings, then commit. Inspect the full branch diff before pushing:
+
+   ```bash
+   git commit -m "docs: update <your name>> task status for 16 Nov"
+   git diff --stat instructor/main...HEAD
+   git push -u instructor HEAD
+   ```
+
+4. Open a PR to the instructor repository's `main`; a teammate reviews and merges it. The push makes status visible in the branch/PR, and the merge makes it part of the shared `main` history.
+
+After that PR merges, start the next day's branch **inside the docs worktree**:
+
+```bash
+git fetch instructor
+git switch -c docs/<your name>-status-2026-11-17 instructor/main
+```
+
+If yesterday's docs PR is still open, continue on that branch and update the existing PR instead of opening another. Keep updates concise and coordinate edits to shared plans, contracts and the RID log to avoid conflicts.
 
 ## 8. Handoffs, integration and checkpoints
 

@@ -56,8 +56,8 @@ Assign ownership by deliverable, with two data owners, one backend/agent owner a
 |---|---|---|---|
 | A | Unstructured-source EDA, extraction/OCR and text retrieval | Source-specific tests/evals, policy evidence and citation provenance | Cited search results and extracted POD/rate records for B/C |
 | B | Structured-source EDA, cleaned schema, loaders, order-candidate lookup and SQL tools | Data-integrity checks and weekly analytics after the first cited complaint flow | Candidate orders, cited data tools and weekly counts for C/D |
-| C | Backend API, agent orchestration, sessions and guardrails | Final-answer citation checks and shared model telemetry | Stable API, clarification workflow and persistent sessions for D |
-| D | React frontend, integration verification and shared eval runner | Weekly/session UX, CI checks and demo runbook; each owner supplies cases | Usable UI, repeatable integrated checks and demo readiness |
+| C | Agent services, sessions and guardrails | Final-answer citation checks and shared model telemetry | Stable backend service, clarification workflow and persistent sessions behind D’s routes |
+| D | React frontend, thin HTTP API, integration verification and shared eval runner | Request/response models, CI checks and demo runbook; each owner supplies cases | Usable UI, repeatable integrated checks and demo readiness |
 
 ### Coordination Responsibilities
 
@@ -66,8 +66,8 @@ These coordination duties should remain small and use existing component outputs
 | Developer | Responsibilities |
 | :-: | --- |
 | A,B | instrument their tools using C's shared logging contract. |
-| C | owns final-answer guardrails, API integration and backend/model telemetry; A/B own source checks and tool telemetry. |
-| D | builds the eval runner and integration/CI checks; every owner supplies and fixes their own component cases. |
+| C | owns service orchestration, final-answer guardrails and backend/model telemetry; D owns HTTP routes and A/B own source checks. |
+| D | owns HTTP routes/models, React, eval runner and integration/CI checks; every owner supplies and fixes component cases. |
 | John | coordinates client communication, pitch and submission readiness alongside proposed A ownership; source owners draft questions. |
 | ALL | all four own fixes in their respective components. |
 | ALL | Each developer documents their own design and audit findings. |
@@ -92,8 +92,8 @@ EDA and loading are distinct but iterative. Preserve raw files; load working cop
 |---|---|---|
 | A | Inventory every POD image, rate card, complaint email and policy/guide document assigned to this stream. Open all files; record file/page counts. Sample OCR/extraction, assess readability and document structure, identify missing PODs and uncertain fields. Check guide presence jointly with B. | Unstructured audit section; extraction samples retained locally; processing manifest design; retrieval/provenance contract; traps and client questions |
 | B | Import the SQL dump; inspect all tables and case-log/guide tabular files; profile GPS JSONL. Record counts, keys, nulls, duplicates, parse failures and join coverage. Investigate migration overlap, postal codes and timezone offsets. | Structured audit; repeatable raw import; cleaned ER; candidate-order identity rules; traps and client questions |
-| C | Agree how B returns candidate orders and how A/B return evidence and errors. Define API, clarification and session behaviour; create a backend shell and endpoint smoke test after key release. | Architecture proposal; initial API contract and synthetic fixture; clarification rules; endpoint capability/budget findings |
-| D | Map client journeys into screens, build complaint input and result layout using synthetic API responses, define weekly fields with B, and create the initial eval runner and integration smoke check. | React/API mock flow; runnable eval cases; UI acceptance checklist; missing-evidence/clarification states |
+| C | Agree how B returns candidate orders and how A/B return evidence and errors. Define service, clarification and session behaviour with D; create a backend shell and endpoint smoke test after key release. | Architecture proposal; initial API contract and synthetic fixture; clarification rules; endpoint capability/budget findings |
+| D | Map client journeys into screens, build complaint input and thin HTTP routes using synthetic service responses, define weekly fields with B, and create the initial eval runner and integration smoke check. | React/API mock flow; runnable eval cases; UI acceptance checklist; missing-evidence/clarification states |
 
 ### Package reconciliation
 
@@ -150,38 +150,39 @@ Acceptance: every assigned input has a processing outcome; failures are visible;
 
 Acceptance: counts reconcile; candidate lookup does not merge unrelated v1/v2 orders; reruns do not duplicate records; tools return citations and honest errors; weekly results can be independently checked.
 
-### C — Backend API, agent and runtime harness
+### C — Agent service and runtime harness
 
-1. Select and document a Python API framework; expose complaint/session and weekly-summary operations for React. Define endpoints before D relies on them.
+1. Agree the Python framework and service-to-route contract with D. Implement complaint/session and weekly-summary service methods behind D’s HTTP routes.
 2. Consume B’s candidate-order lookup; present candidates and ask for clarification when identity remains unresolved. Never guess a source system.
 3. Orchestrate resolve order → gather evidence → reconcile → recommend per policy → validate and respond. LangGraph is proposed, subject to team agreement and compatibility.
 4. Query tools at question time and preserve evidence provenance. Separate policy rules/calculations from generated explanation; unsupported recommendations must be withheld.
 5. Implement persistent sessions/checkpointing, stable session IDs and restart recovery. Persist clarifications and evidence references safely.
 6. Implement deterministic input refusal rules and code-based output checks for PII/policy violations. Validate final-answer citations against A/B source references; A/B own provenance at their tool boundaries, while case-specific evals assess claim support.
 7. Define the minimal shared telemetry contract and instrument backend/model calls; A/B instrument their own tools and paid extraction. Combine usage once for a daily spend figure, avoiding double counting.
-8. Protect the API key on the backend. Configure React/API connectivity, CORS or development proxy as needed. Add timeouts, exception handling and bounded retries where appropriate.
+8. Protect the API key in backend services. Agree error mapping with D; add backend timeouts, exception handling and bounded retries where appropriate.
 9. Document backend startup and recovery commands and supply a trace for the demo; D documents UI steps, while John coordinates the overall rehearsal and pitch.
 
 Proposed MVP boundary: recommend re-delivery/refund/compensation/rejection; do not execute payments, operational updates or outbound messages. Record this explicitly in architecture documentation. The harness permits consequential actions to be excluded. If the team includes execution, add an approval gate, approver decision, durable resume and duplicate-execution protection, and demonstrate it.
 
 Acceptance: React can call the service; a full complaint produces grounded evidence and citations; ambiguous/missing/conflicting evidence is handled; refusals work; follow-ups survive restart; one bad dependency does not crash the app.
 
-### D — Frontend, integration and evaluation
+### D — Frontend, HTTP API, integration and evaluation
 
 1. Extend the existing React/Vite scaffold with a small complaint workspace: email input, submission, loading, error and retry states.
 2. Display resolved order or candidate clarification, evidence, source conflicts, recommendation and visible source references.
 3. Support follow-up questions and the persisted session ID. Demonstrate UI recovery after backend restart.
-4. Build the weekly driver/zone view using B's aggregate through C's API, with reporting-period selection and unknown-attribution display.
+4. Build the weekly driver/zone view using B's aggregate through C's service and D's HTTP route, with reporting-period selection and unknown-attribution display.
 5. Add approval UI only if execution enters scope. For recommendation-only MVP, make that boundary clear in the interface.
-6. Build a single-command eval runner and consolidated results. Collect component-owned cases from A/B/C; each owner fixes failures in their area. Add automated lint/build/eval checks in CI if repository permissions allow them.
-7. Own repeatable end-to-end integration checks from React through API to synthetic or approved evidence. Cover normal, ambiguous, unavailable-source, refusal and malformed responses; supply sanitised UI screenshots to John.
-8. Own the demo runbook and full-stack smoke test with C: startup order, health checks, restart/recovery and fallback steps. John coordinates the pitch and submission.
+6. Implement thin complaint/session and weekly-summary HTTP routes with validated request/response models around C’s services. Own route errors and React connectivity; C reviews the service boundary.
+7. Build a single-command eval runner and consolidated results. Collect component-owned cases from A/B/C; each owner fixes failures in their area. Add automated lint/build/eval checks in CI if repository permissions allow them.
+8. Own repeatable end-to-end integration checks from React through API to synthetic or approved evidence. Cover normal, ambiguous, unavailable-source, refusal and malformed responses; supply sanitised UI screenshots to John.
+9. Own the demo runbook and full-stack smoke test with C: startup order, health checks, restart/recovery and fallback steps. John coordinates the pitch and submission.
 
-Acceptance: complaint and weekly workflows are usable; citations and conflicts are visible; errors/clarifications do not dead-end; the UI calls the backend and never receives the model API key; the shared eval command and integration smoke check produce checkable pass/fail output.
+Acceptance: React reaches C’s service through D’s validated HTTP routes; complaint and weekly workflows are usable; citations and conflicts are visible; errors/clarifications do not dead-end; the browser never receives the model API key; shared eval and integration smoke checks produce checkable pass/fail output.
 
 ### Protecting capacity
 
-- C owns orchestration, state, final-answer guardrails and backend/model telemetry. A/B own source provenance, source-specific retries and tool telemetry; B owns candidate lookup. D owns frontend, eval-runner and cross-component verification.
+- C owns orchestration, state, final-answer guardrails and backend/model telemetry. A/B own source provenance, source-specific retries and tool telemetry; B owns candidate lookup. D owns React, thin HTTP routes/models, eval runner and cross-component verification.
 - A/B own ingestion validation and source-specific eval cases. C owns workflow, state and refusal cases. D owns UI cases and runner integration; each owner fixes failures in their component.
 - Keep UI scope to complaint triage and the required weekly view. Defer authentication systems, elaborate dashboards and extra operational workflows unless essential to agreed requirements.
 - Preserve the one-page report, architecture diagrams, pitch and honest post-mortem as shared deliverables. B compiles the report; C compiles architecture; John coordinates pitch and submission; D owns the demo runbook and integrated smoke check.
@@ -195,8 +196,8 @@ Freeze minimum contracts by 17 Nov. Use typed models or JSON Schema, sample succ
 | Extracted POD/rate records | A + B agree; A produces | B | Stable source ID, image locator, extracted fields, uncertainty, extraction version/status |
 | Cleaned data model and candidate lookup | B | A/C | Order identity, event identity, candidate evidence, time semantics, source provenance and join rules |
 | Retrieval/SQL tool results | A/B | C | Success/missing/ambiguous/failure outcome, data, verifiable source references and structured error |
-| Complaint/session API | C | D | Request/session IDs, workflow status, candidates, evidence, conflicts, recommendation, citations and errors |
-| Weekly-summary API | B computes; C exposes | D | Period boundaries/timezone, driver/zone aggregates, unknown attribution and definitions |
+| Complaint/session HTTP API | D implements routes/models; C agrees service contract | React | Request/session IDs, workflow status, candidates, evidence, conflicts, recommendation, citations and errors |
+| Weekly-summary HTTP API | B computes; C supplies service; D exposes route | React | Period boundaries/timezone, driver/zone aggregates, unknown attribution and definitions |
 | Telemetry | C defines; A/B/C emit | All; D verifies | Linked trace events, latency, tokens/cost, source references and errors; no client data in committed logs |
 | Eval format | D defines; all contribute | Runner | Case ID, category, input, checkable expectations, required sources, owner and outcome |
 
@@ -277,7 +278,7 @@ Official checkpoint requirements are distinguished below from additional team ta
 |---|---|---|
 | Mon 16 Nov | Briefing; package/key expected | A/B inventory and initial imports; confirm endpoint capabilities; C backend shell; D React mock flow; raise missing items immediately |
 | Tue 17 Nov, 14:00 | Team sync | Confirm named owners, MVP boundaries and contracts; sample A→B extraction handoff; connect React to backend using synthetic responses; client questions sent |
-| Wed 18 Nov | Internal target | One thin complaint flow from UI through API to loaded evidence and cited response; first five evals runnable |
+| Wed 18 Nov | Internal target | One thin complaint flow from React through D’s route and C’s service to loaded evidence and cited response; first five evals runnable |
 | Thu 19 Nov, 09:00 | Checkpoint 1; Consult 1 at 10:00 | Audit, cleaned ER, traps, package reconciliation/client Q&A, architecture proposal, substantive commit from all four |
 | Fri 20 Nov | Consult 2 | Grow source coverage and integration; prioritise one cited complaint flow; start weekly aggregate/API/UI once that flow works; track blockers for remaining source types |
 | Mon 23 Nov, 09:00 | Checkpoint 2; Consult 3 at 13:00 | Official: two source types end to end including images; cited answer; OCR extraction; spend checked. Internal targets: broaden source coverage, weekly view and runnable eval suite after the cited flow is stable |
