@@ -8,7 +8,7 @@
 
 **Team:** John Phang (Captain), Ralph, Jenn Fang, Jeffrey Kong
 
-**Developer identifiers:** A, B, C and D;
+**Developer identifiers:** A, B, C and D. Assignment of people to roles is pending team confirmation.
 
 **Next sync:** Tue 17 Nov 2026, 14:00 SGT. All times below are Singapore time.
 
@@ -68,12 +68,12 @@ These coordination duties should remain small and use existing component outputs
 | A,B | instrument their tools using C's shared logging contract. |
 | C | owns service orchestration, final-answer guardrails and backend/model telemetry; D owns HTTP routes and A/B own source checks. |
 | D | owns HTTP routes/models, React, eval runner and integration/CI checks; every owner supplies and fixes component cases. |
-| John | coordinates client communication, pitch and submission readiness alongside proposed A ownership; source owners draft questions. |
+| Captain | coordinates client communication, pitch and submission readiness; A/B draft source questions. |
 | ALL | all four own fixes in their respective components. |
 | ALL | Each developer documents their own design and audit findings. |
 | B | compiles the data quality report from all owners’ findings. |
 | C | compiles architecture documentation; A/B/D contribute source and UI evidence. |
-| D | supplies UI screenshots and demo steps; John coordinates the pitch and overall rehearsal. |
+| D | supplies UI screenshots and demo steps; Captain coordinates the pitch and overall rehearsal. |
 
 ### Working rules
 
@@ -112,7 +112,7 @@ Exact filenames, counts and guide format must be confirmed. If the guide is tabu
 
 Every supplied file must be opened and accounted for. Audit evidence records counts, parse status, source identifiers and decisions without copying client records into git. Investigate timestamp offsets empirically before normalising; retain raw timestamps and timezone assumptions. Preserve postal codes as text and flag unrecoverable values rather than inventing digits. Confirm whether `(source_system, order_no)` is unique at order level; delivery events may require a separate event key.
 
-Raise missing-package questions promptly on 16–17 Nov because replies take up to two working days. John sends questions to the course director with subject `Client question — Team 2`. Each source owner drafts precise questions; log questions, dates, status, answers and resulting decisions in `docs/00-Biz_Requirements/client_qa.md`.
+Raise missing-package questions promptly on 16–17 Nov because replies take up to two working days. Captain sends questions to the course director with subject `Client question — Team 2`. Each source owner drafts precise questions; log questions, dates, status, answers and resulting decisions in `docs/00-Biz_Requirements/client_qa.md`.
 
 ### Checkpoint 1 — Thu 19 Nov, 09:00
 
@@ -121,6 +121,17 @@ Raise missing-package questions promptly on 16–17 Nov because replies take up 
 - [ ] Evidence-backed trap list in `docs/05-Reviews/trap_list.md`.
 - [ ] Cleaned-schema ER diagram and architecture proposal in `docs/02-Design/architecture.md`.
 - [ ] Every member has committed substantive work under their own account.
+
+**Checkpoint 1 owners (role assignments, not person assignments):**
+
+| Role | Accountable output by 19 Nov, 09:00 SGT |
+|---|---|
+| A | Open and inventory every image, complaint email and guide/policy file; record counts, unreadable files, source traps and questions in the audit and package checklist. |
+| B | Open and profile every SQL, tabular and GPS file; record row counts, join risks and traps; produce the cleaned-schema ER diagram. |
+| C | Compile the architecture proposal and Mermaid data/complaint flow with A/B evidence; publish minimum service/tool and citation contracts. |
+| D | Show a synthetic React → HTTP route → service flow, clarification/missing-evidence states and the initial runnable eval cases. |
+| Captain | Consolidate package-versus-brief gaps, send client questions, maintain the client Q&A and verify checkpoint evidence is merged into instructor `main`. |
+| All roles | Make a substantive commit under each developer’s own account and review cross-role handoffs. |
 
 ## 4. Stage 2 — Implement owned components
 
@@ -160,7 +171,7 @@ Acceptance: counts reconcile; candidate lookup does not merge unrelated v1/v2 or
 6. Implement deterministic input refusal rules and code-based output checks for PII/policy violations. Validate final-answer citations against A/B source references; A/B own provenance at their tool boundaries, while case-specific evals assess claim support.
 7. Define the minimal shared telemetry contract and instrument backend/model calls; A/B instrument their own tools and paid extraction. Combine usage once for a daily spend figure, avoiding double counting.
 8. Protect the API key in backend services. Agree error mapping with D; add backend timeouts, exception handling and bounded retries where appropriate.
-9. Document backend startup and recovery commands and supply a trace for the demo; D documents UI steps, while John coordinates the overall rehearsal and pitch.
+9. Document backend startup and recovery commands and supply a trace for the demo; D documents UI steps, while Captain coordinates the overall rehearsal and pitch.
 
 Proposed MVP boundary: recommend re-delivery/refund/compensation/rejection; do not execute payments, operational updates or outbound messages. Record this explicitly in architecture documentation. The harness permits consequential actions to be excluded. If the team includes execution, add an approval gate, approver decision, durable resume and duplicate-execution protection, and demonstrate it.
 
@@ -175,8 +186,8 @@ Acceptance: React can call the service; a full complaint produces grounded evide
 5. Add approval UI only if execution enters scope. For recommendation-only MVP, make that boundary clear in the interface.
 6. Implement thin complaint/session and weekly-summary HTTP routes with validated request/response models around C’s services. Own route errors and React connectivity; C reviews the service boundary.
 7. Build a single-command eval runner and consolidated results. Collect component-owned cases from A/B/C; each owner fixes failures in their area. Add automated lint/build/eval checks in CI if repository permissions allow them.
-8. Own repeatable end-to-end integration checks from React through API to synthetic or approved evidence. Cover normal, ambiguous, unavailable-source, refusal and malformed responses; supply sanitised UI screenshots to John.
-9. Own the demo runbook and full-stack smoke test with C: startup order, health checks, restart/recovery and fallback steps. John coordinates the pitch and submission.
+8. Own repeatable end-to-end integration checks from React through API to synthetic or approved evidence. Cover normal, ambiguous, unavailable-source, refusal and malformed responses; supply sanitised UI screenshots to the Captain.
+9. Own the demo runbook and full-stack smoke test with C: startup order, health checks, restart/recovery and fallback steps. Captain coordinates the pitch and submission.
 
 Acceptance: React reaches C’s service through D’s validated HTTP routes; complaint and weekly workflows are usable; citations and conflicts are visible; errors/clarifications do not dead-end; the browser never receives the model API key; shared eval and integration smoke checks produce checkable pass/fail output.
 
@@ -185,7 +196,7 @@ Acceptance: React reaches C’s service through D’s validated HTTP routes; com
 - C owns orchestration, state, final-answer guardrails and backend/model telemetry. A/B own source provenance, source-specific retries and tool telemetry; B owns candidate lookup. D owns React, thin HTTP routes/models, eval runner and cross-component verification.
 - A/B own ingestion validation and source-specific eval cases. C owns workflow, state and refusal cases. D owns UI cases and runner integration; each owner fixes failures in their component.
 - Keep UI scope to complaint triage and the required weekly view. Defer authentication systems, elaborate dashboards and extra operational workflows unless essential to agreed requirements.
-- Preserve the one-page report, architecture diagrams, pitch and honest post-mortem as shared deliverables. B compiles the report; C compiles architecture; John coordinates pitch and submission; D owns the demo runbook and integrated smoke check.
+- Preserve the one-page report, architecture diagrams, pitch and honest post-mortem as shared deliverables. B compiles the report; C compiles architecture; Captain coordinates pitch and submission; D owns the demo runbook and integrated smoke check.
 
 ## 5. Contracts and handoffs
 
@@ -265,7 +276,7 @@ Cases may exercise several layers. Refine the allocation when the actual traps a
 | Error handling | Disable a dependency deliberately; app degrades honestly; sanitised screenshot | Component owner fixes; D captures |
 | State | Follow-up question and restart mid-conversation with preserved session | C implements; D verifies |
 | Human approval | Document recommendation-only boundary, or demonstrate gated execution if included | C documents; D verifies |
-| Observability | Linked trace, replay/diagnosis example and cumulative API spend | C instruments backend/model; A/B instrument tools and extraction; John checks daily total |
+| Observability | Linked trace, replay/diagnosis example and cumulative API spend | C instruments backend/model; A/B instrument tools and extraction; Captain checks daily total |
 | Evals | At least 20 cases, at least two refusals, one command, latest committed results and failure-to-fix history | D builds runner and CI integration; A/B/C/D contribute and fix their cases |
 
 Agree conflict-resolution rules from evidence/client answers; do not create a universal hierarchy such as “GPS always overrides POD”. Missing policy produces a stated limitation and client question, not invented compensation terms.
@@ -285,6 +296,48 @@ Official checkpoint requirements are distinguished below from additional team ta
 | Tue 24 Nov, 10:00 | Consult 4; rehearsal; slot order announced | Full agent/tool workflow, code guardrails and 20+ passing evals; rehearse with working UI; identify remaining hardening defects |
 | Thu 26 Nov, 09:00–12:00 | Final sprint | Final report, sanitised evidence, hostile rehearsal, timed pitch, restart/failure exercises and submission readiness |
 | Fri 27 Nov, 09:00–13:00 | Demo, NTU@one-north SR902 | Per team: 5-minute pitch, 5-minute live demo and Q&A; bring laptop and charger |
+
+
+### Checkpoint 2 ownership — Mon 23 Nov, 09:00 SGT
+
+| Role | Accountable output |
+|---|---|
+| A | Working image OCR/extraction with source locators and uncertainty; one image-derived evidence handoff to B/C. |
+| B | Repeatable load and cited SQL/data tools for at least one structured source, linked to A’s extracted record where needed. |
+| C | Question-time workflow that combines the two source types and produces one grounded, cited answer; show model/tool trace and spend from backend calls. |
+| D | Demonstrate the answer in React through validated HTTP routes; run the shared eval command and an integrated smoke check. |
+| Captain | Confirm the two-source demonstration includes images, check cumulative API spend against budget, and verify the deliverables are merged into instructor `main`. |
+
+### Demo hardening ownership — Tue 24 Nov rehearsal
+
+| Role | Accountable output |
+|---|---|
+| A | Extraction/retrieval failure tests, cited source evidence and uncertainty handling. |
+| B | Data-integrity, identity and weekly-aggregate checks; independently verifiable numbers. |
+| C | Agent/tool workflow, code guardrails, persistent sessions, honest failure behaviour and trace replay. |
+| D | At least 20 consolidated passing eval cases with A/B/C contributions, UI/API failure and restart checks, and the rehearsal runbook. |
+| Captain | Run a timed rehearsal, assign fixes for failures and track remaining risks in the RID log. |
+
+### Final sprint ownership — Thu 26 Nov, 09:00–12:00 SGT
+
+| Role | Accountable output |
+|---|---|
+| A | Final source coverage, extraction limitations and sanitised citation examples. |
+| B | One-page data quality report, reconciled counts and cleaned-schema explanation. |
+| C | Final architecture diagrams, guardrail/session evidence and backend recovery steps. |
+| D | Final UI, full-stack smoke check, demo runbook, sanitised screenshots and restart/failure rehearsal. |
+| Captain | Confirm submission state, coordinate the five-minute pitch and lead the hostile-question rehearsal. |
+
+### Client demo ownership — Fri 27 Nov, 09:00–13:00 SGT
+
+| Role | Live responsibility |
+|---|---|
+| Captain | Lead the five-minute pitch, hand off to the live demo, manage time and coordinate Q&A. |
+| D | Operate the application and weekly view; show citations, clarification and fallback behaviour using the runbook. |
+| C | Explain orchestration, guardrails, state, model spend and what the app does when evidence or a dependency is unavailable. |
+| B | Explain order identity, cleaned data, GPS/timezone handling, weekly counts and the data quality report. |
+| A | Explain OCR/extraction, policy/email retrieval, source citations and uncertainty in images or documents. |
+| All roles | Answer questions in their area honestly; do not invent a missing source or policy. |
 
 Run a short daily integration check: what now works end to end, which interface/data decision blocks progress, failing evals and API spend. Resolve new dependencies with the affected developer the same day.
 
@@ -353,14 +406,14 @@ Use the current documentation scaffold on `chore/PM_Scaffolding`. Its files are 
 | `docs/05-Reviews/data_audit.md` | Counts, source coverage, parsing and join findings | A/B sections; C/D contribute |
 | `docs/05-Reviews/trap_list.md` | Evidence, decisions, unresolved assumptions and regression cases | All |
 | `docs/05-Reviews/package_checklist.md` | Expected-versus-received package manifest | A/B |
-| `docs/00-Biz_Requirements/client_qa.md` | Dated questions, answers and decisions | John coordinates; source owners draft |
+| `docs/00-Biz_Requirements/client_qa.md` | Dated questions, answers and decisions | Captain coordinates; source owners draft |
 | `docs/02-Design/architecture.md` | Architecture plus Mermaid data flow, cleaned ER and complaint sequence | C compiles; A/B/D supply their areas |
 | `docs/02-Design/contracts.md` | API/tool/extraction/telemetry/eval contracts | C coordinates; all agree |
 | `docs/04-Testing_Evals/data_quality_report.md` | One-page report of data problems and handling | B compiles; all contribute |
-| `docs/06-Releases/demo_checklist.md` | Demo order, grading evidence, fallback procedure and submission checks | D owns runbook and smoke check; John coordinates pitch/submission; all contribute |
+| `docs/06-Releases/demo_checklist.md` | Demo order, grading evidence, fallback procedure and submission checks | D owns runbook and smoke check; Captain coordinates pitch/submission; all contribute |
 | `docs/06-Releases/retrospective.md` | Honest limitations, tradeoffs and lessons | All |
-| `docs/README.md` | Accurate index and status of capstone documents | John coordinates |
-| `docs/01-Plans_Status/` | Current plan, named task lists and decision log | John coordinates; each owner updates their tasks |
+| `docs/README.md` | Accurate index and status of capstone documents | Captain coordinates |
+| `docs/01-Plans_Status/` | Current plan, role task lists and decision log | Captain coordinates; each owner updates their tasks |
 | `docs/03-Handoffs/` | Cross-owner handoff notes with PR, checks and remaining gaps | Sending owner |
 | `docs/05-Reviews/` | Checkpoint and harness lists plus review/audit evidence | All |
 | `data/` | Original client package; excluded from git except its README | A/B |
@@ -401,4 +454,4 @@ Track delivery risks, issues, decisions and their outcomes in the [delivery RID 
 |---|---|---|
 | TEAM_PLAN.md | 13 Nov 2026 | Original consolidated draft from Jeffrey |
 | 0.2 | 13 Nov 2026 | shared data foundation and workstreams A–D |
-| 0.3 | 14–15 Nov 2026 | Initial plan, then rebalanced ownership: B candidate lookup, A/B source provenance, C orchestration and final checks, D UI and eval runner; John coordinates pitch and submission. Assignments remain proposed. |
+| 0.3 | 14–15 Nov 2026 | Initial plan, then rebalanced ownership: B candidate lookup, A/B source provenance, C orchestration and final checks, D UI, HTTP routes and eval runner; Captain coordinates pitch and submission. Person-to-role assignments remain unconfirmed. |
