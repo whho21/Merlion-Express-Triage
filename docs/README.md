@@ -33,6 +33,7 @@ docs/
 | [Delivery RID log](01-Plans_Status/delivery_RID.md) | `01-Plans_Status/` | Track risks, issues and decisions. |
 | [Team work guide](01-Plans_Status/TEAM_WORK_GUIDE.md) | `01-Plans_Status/` | Daily Git, PR review, handoff and checkpoint workflow. |
 | [Architecture](02-Design/architecture.md) | `02-Design/` | Document the application architecture. |
+| [Hosting options](02-Design/hosting-options.md) | `02-Design/` | Compare local course delivery and portfolio hosting; proposed deployment and migration steps. |
 | [Technical contracts](02-Design/contracts.md) | `02-Design/` | Document agreed interfaces and data contracts. |
 | [Handoff template](03-Handoffs/Name_YYYY-MM-DD-topic.md) | `03-Handoffs/` | Record handoff scope, remaining work and next steps. |
 | [Data quality report](04-Testing_Evals/data_quality_report.md) | `04-Testing_Evals/` | Report data quality findings and handling. |
