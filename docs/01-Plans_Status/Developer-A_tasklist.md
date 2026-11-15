@@ -17,7 +17,7 @@ The A–D to named-person mapping is still open in `delivery_RID.md` (item 1). U
 | S/N | Task / evidence of completion | Planned End | Done |
 | --: | --- | :-- | :--: |
 | 1 | Audit every supplied POD, rate card, complaint email and guide/policy document; record counts, readability, missing items and traps in `docs/05-Reviews/` | 19 Nov, 09:00 | ⏳ |
-| 2 | Draft unstructured-source client questions; collect B’s structured-source questions and coordinate the client log and submission as captain | 16–17 Nov | ⏳ |
+| 2 | Draft unstructured-source client questions; collect B’s structured-source questions and send to captain to consolidate the client log and submission  | 16–17 Nov | ⏳ |
 | 3 | Agree extraction record and citation contract with B/C, including image locator, uncertainty and error status; add synthetic handoff sample to `docs/02-Design/contracts.md` | 17 Nov | ⏳ |
 | 4 | Implement repeatable email and guide/policy parsing with stable source locators and visible per-file outcomes | 20 Nov | ⏳ |
 | 5 | Implement POD OCR and rate-card extraction, preserving original image references and uncertain fields; demonstrate one image-derived cited answer | 23 Nov, 09:00 | ⏳ |

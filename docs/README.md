@@ -20,7 +20,7 @@ docs/
 ## Document index
 
 | Doc | Location | Purpose |
-|---|---|---|
+| --- | --- | --- |
 | [Documentation index](README.md) | `docs/` | Navigate the project documentation. |
 | [Client brief](00-Biz_Requirements/CLIENT_BRIEF.md) | `00-Biz_Requirements/` | Client requirements, constraints and engagement rules. |
 | [Client Q&A](00-Biz_Requirements/client_qa.md) | `00-Biz_Requirements/` | Track questions, client responses and project impacts. |
