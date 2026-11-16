@@ -49,6 +49,10 @@ E starts with count/setup checks and a small runner that loads synthetic cases, 
 
 C retains the API and framework decisions to avoid splitting critical backend responsibilities. Keep routes thin and the MVP narrow. A/B implement their own tools, retries, provenance and telemetry; E compiles run evidence and spend summaries from those events. Jeffrey leads the business narrative, presentation and client-facing explanation, and helps frame client questions. John validates technical wording, sends/logs official client emails, coordinates delivery/submission and leads technical Q&A. A/B supply source facts; E supports rehearsal and recovery. Do not assume business experience supplies logistics policy: rules still require client/source authority. Review progress daily and reassign a bounded task when needed.
 
+Table-level delivery refinement: the [database design](../02-Design/database-design_2026-11-16.md#3-complete-proposed-data-table-inventory) assigns both creation and loading to each table owner. A owns extraction-derived table migrations/loaders, B operational/case/GPS/zone tables and schema coordination, C shared source/run metadata and batch orchestration, and E the sourced calendar. B consumes A’s loaded records rather than inheriting every loader. Every owner provides teammate-runnable fresh setup and periodic-batch procedures; E verifies them. These SQL loaders remain pending in the reviewed code.
+
+Database naming: one `merlion_express` database. Keep instructor `orders`, `drivers`, `deliveries` unchanged; prefix every new table `raw_`, `clean_` or `meta_` and reporting views `view_`. See the database inventory for owner/status and exact names; upstream extraction filenames/tool contracts are unchanged.
+
 ### Shared local setup and working rules
 
 1. All five download the approved package, follow [SQL seeding instructions](../../scripts/seed_sql_data.md), and verify the same raw table counts. Docker is the main path; an existing local MySQL is supported. E records confirmations without client records or credentials.
