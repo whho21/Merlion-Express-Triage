@@ -34,4 +34,4 @@ docker compose exec -T mysql mysql -uroot -pcapstone < data/sql/<dump>.sql
 
 ## Timeline
 
-Briefing Mon 16 Nov (Zoom) · Checkpoint 1 Thu 19 Nov · Checkpoint 2 Mon 23 Nov · Consults Thu 19, Fri 20, Mon 23, Tue 24 Nov (Zoom) · Final sprint Thu 26 Nov · **Demo Fri 27 Nov 09:00–13:00, SR902** (slot order announced Tue 24 Nov). Details: [CHECKPOINTS.md](CHECKPOINTS.md).
+Briefing Mon 16 Nov (Zoom) · Checkpoint 1 Fri 20 Nov 17:00 (repo only) · Checkpoint 2 Mon 23 Nov 09:00 · one online consult per team next week (Zoom, announced at 5.6) · Final sprint Thu 26 Nov · **Demo Fri 27 Nov 09:00–13:00, SR902** (slot order announced Tue 24 Nov). Details: [CHECKPOINTS.md](CHECKPOINTS.md).
