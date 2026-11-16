@@ -7,7 +7,8 @@
 
 ## A — Extraction records, search results and citations (DRAFT for the 17 Nov sync)
 
-**Proposed by:** Ralph (proposed Developer A). **Status:** draft for B/C review, not frozen.
+**Proposed by:** Ralph (Developer A). **Status:** draft for B/C review, not frozen. Section 4 matches the email
+parser in `backend/unstructured/` (16 Nov).
 **Consumers:** B (loads POD/rate records into MySQL), C (search tools, final-answer citation checks).
 All samples are **synthetic**: no client data.
 
@@ -88,23 +89,49 @@ to the April card silently (T-A15).
 
 ### 4. Email record (A produces → C consumes via `search_emails`)
 
+Built by `python -m backend.unstructured.ingest` → `output/unstructured/emails.jsonl` (git-ignored). Public view
+(what leaves A's tools) shown:
+
 ```json
 {
   "source_id": "email:2026-01-01_000",
+  "type": "document",
   "ref": "data/docs/complaint_emails/2026-01-01_000.txt",
+  "parser_version": "emails-1.0",
+  "status": "ok",
+  "issues": [],
   "received_at": "2026-01-01T10:00:00+08:00",
-  "sender": "[MASKED]",
+  "sender_id": "sender:0123456789ab",
   "subject": "Wrong address delivered",
-  "category": "wrong_address|missing_item|where_is_parcel|cod_wrong|late|thrown_over_gate|compliment",
+  "category": "wrong_address|missing_item|where_is_parcel|cod_wrong|late|thrown_over_gate|compliment|unclassified",
   "is_complaint": true,
   "order_numbers": ["99999"],
   "system_hint": null,
-  "claims": {"stay_block": "[MASKED]", "pod_block": "[MASKED]", "days_ago": null, "amount_extra": null},
+  "more_orders_unspecified": false,
+  "claims": {"stay_block": "[MASKED]", "pod_block": "[MASKED]", "days_ago": null, "amount_extra": null, "status_claimed": null},
   "driver_codes": [],
   "corporate_account": null,
-  "pii_masked_body": "You delivered my parcel to the wrong block!! … Order 99999 …"
+  "pii_found": {"block": 2},
+  "pii_masked_body": "You delivered my parcel to the wrong block!! I stay blk [BLOCK] but the POD photo shows blk [BLOCK]. Order 99999. Please retrieve ASAP.",
+  "locators": {"received_at": "header:Date", "subject": "header:Subject", "order_numbers": ["body:char:99-104"],
+               "claims": {"stay_block": "body:char:56-59", "pod_block": "body:char:88-91"}, "body_offset_in_file": 122}
 }
 ```
+
+Rules:
+- The sender address is never stored. `sender_id` is a hash prefix, so repeat senders can still be grouped.
+- `system_hint` is set only when the email itself writes `V1-`/`V2-`. Choosing v1 or v2 is B's candidate lookup
+  (T-A01). A passes the number + `received_at` so B can rule out orders created after the email (T-A02/T-A03).
+- The local record keeps the claimed block numbers so code can compare them with SQL (T-A07); `public_view()`
+  masks them before anything reaches C or the LLM.
+- `body:char:<a>-<b>` counts characters in the body (after the blank line, line endings as `\n`);
+  `body_offset_in_file` gives the body's start in the file.
+- `status`: `ok` · `partial` (no order number in a complaint, unknown category, bad date, several numbers) ·
+  `failed` (not UTF-8, missing headers, empty). Every file gets a record and a `manifest.json` entry.
+
+Policy chunks (`policy_chunks.jsonl`, empty until the Resolution Guide arrives):
+`{"source_id": "policy:<stem>", "type": "document", "ref": "data/tabular/<file>", "locator": "section:<heading>|line:<a>-<b>" or "row:<n>", "heading": "…", "text": "…"}`.
+`.md`/`.txt`/`.csv` are parsed; other formats get a visible `UNSUPPORTED_FORMAT` outcome.
 
 ### 5. A's tool results (common envelope from the team plan)
 

@@ -6,7 +6,7 @@ Sections: **A — Unstructured sources** (emails, POD scans, rate card, policy) 
 Evidence cites file names / order numbers only; client personal data stays in `data/`. Full counts:
 `docs/05-Reviews/data_audit.md`.
 
-## A — Unstructured sources (found 16 Nov 2026, Ralph / proposed Developer A)
+## A — Unstructured sources (found 16 Nov 2026, Ralph / Developer A)
 
 | ID | Trap | Evidence | How the app must handle it | Eval idea |
 |---|---|---|---|---|
