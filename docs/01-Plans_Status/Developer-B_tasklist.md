@@ -1,27 +1,23 @@
 # Tasklist — Developer B
 
-**Owner:** To be assigned (A–D mapping pending)
-**Scope:** Structured data, MySQL and analytics
+**Owner:** Jenn Fang
 
-## Task Legend
+**Scope:** Python/pandas profiling, data cleaning, MySQL, identity and analytics
 
-- ⏳ — waiting to start
-- 🚧 — in progress
-- ✅ — completed
-- 🙅 — cancelled
+**Updated:** 16 Nov 2026 (SGT). Source of truth: [team plan v0.5](Capstone_TEAM_PLAN_v0.5.md).
 
-The A–D to named-person mapping is still open in `delivery_RID.md` (item 1). Update the owner line after the team agrees it. Dates are Singapore time. Mark a task complete only after its deliverable and check are available; link the PR or evidence in the task text when done. Client data and keys stay out of Git.
+Status: ⏳ planned, 🚧 in progress, ✅ verified complete, 🙅 cancelled. Mark complete only with a PR/evidence link and an executed acceptance check. Initial audit observations do not establish that this owner's implementation is complete. Each owner verifies local data, supplies cases, fixes their own component and writes developer-reviewed dependent-work handoffs. Client data and secrets stay outside Git.
 
-## Tasklist
+Checkpoint 1 is **Fri 20 Nov, 17:00 SGT**; Checkpoint 2 remains **Mon 23 Nov, 09:00 SGT**.
 
-| S/N | Task / evidence of completion | Planned End | Done |
-| --: | --- | :-- | :--: |
-| 1 | Audit SQL, tabular and GPS files; record counts, keys, duplicates, nulls, parse failures, join coverage and traps in `docs/05-Reviews/` | 19 Nov, 09:00 | ⏳ |
-| 2 | Draft evidence-backed client questions on missing guide/files, source authority and timezone; give John wording for the client log | 16–17 Nov | ⏳ |
-| 3 | Import the raw SQL dump and define repeatable loading commands; document counts and rejected records | 19 Nov, 09:00 | ⏳ |
-| 4 | Propose cleaned order/event keys, candidate-order identity rules, timestamp and postal-code handling; add Mermaid ER diagram to `docs/02-Design/architecture.md` | 19 Nov, 09:00 | ⏳ |
-| 5 | Agree POD/rate handoff schema and source provenance with A; test loader using a synthetic sample | 17–20 Nov | ⏳ |
-| 6 | Build idempotent SQL, tabular, GPS and extracted-image loaders; reconcile source, loaded, rejected and duplicate counts | 23 Nov | ⏳ |
-| 7 | Implement candidate-order lookup and cited delivery, POD, GPS-window and date-sensitive rate tools; distinguish ambiguous, missing and failed outcomes | 23 Nov | ⏳ |
-| 8 | After the first cited complaint flow works, implement weekly complaint counts by driver/zone, period and unknown attribution; verify totals | 23–24 Nov | ⏳ |
-| 9 | Contribute at least six data-integrity/analytics eval cases, tests and telemetry; compile one-page `docs/04-Testing_Evals/data_quality_report.md` | 24–26 Nov | ⏳ |
+| S/N | Task / evidence of completion | Planned end | Status |
+|---:|---|---|---|
+| 1 | Reproduce audit counts in native MySQL; document common raw import and reconcile loaded counts with all five setups | 17–20 Nov | ⏳ |
+| 2 | Profile SQL/GPS using pandas; investigate composite identities, delivery gaps, postal semantics and time alignment; update audit/traps | 20 Nov, 17:00 | ⏳ |
+| 3 | Verify structured questions Q01/Q03–Q06 with A/E; John sends; preserve unresolved business rules | 16–17 Nov | ⏳ |
+| 4 | Agree extraction/lookup/tool schemas with A/C; publish fixture and cleaned Mermaid ER | 17 Nov contracts; 20 Nov, 17:00 ER | ⏳ |
+| 5 | Build idempotent cleaned loaders and candidate lookup using system_version/order_id; preserve raw timestamps and postal text | 18–23 Nov | ⏳ |
+| 6 | Expose cited delivery/POD/GPS/date-sensitive rate tools; use A sample for Friday image integration; do not infer missing rates/attempts | 20 Nov internal; 23 Nov, 09:00 checkpoint | ⏳ |
+| 7 | Implement weekly driver/zone aggregates only with approved case/time/dedup/zone definitions; expose unknowns and limitations | 23–24 Nov; client-dependent | ⏳ |
+| 8 | Supply six checkable data/analytics cases, source-tool telemetry and independently verified totals; fix own failures | 24 Nov | ⏳ |
+| 9 | Compile one-page quality report including unresolved limitations and cleaning decisions from all owners | 26 Nov | ⏳ |

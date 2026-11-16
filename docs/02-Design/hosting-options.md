@@ -6,7 +6,7 @@
 
 ## 1. Recommendation
 
-Keep the course application on the demo laptop: React, the Python backend, MySQL and retrieval assets all run locally. Calls to the class-provided LLM endpoint still require connectivity. The [client brief](../00-Biz_Requirements/CLIENT_BRIEF.md) requires a working application and live demonstration; it does not require public hosting. This also matches the local deployment direction in [team plan v0.4, section 9](../01-Plans_Status/Capstone_TEAM_PLAN_v0.4.md).
+Keep the course application on the demo laptop: React, the Python backend, MySQL and retrieval assets all run locally. Calls to the class-provided LLM endpoint still require connectivity. The [client brief](../00-Biz_Requirements/CLIENT_BRIEF.md) requires a working application and live demonstration; it does not require public hosting. This also matches the local deployment direction in [team plan v0.5, section 9](../01-Plans_Status/Capstone_TEAM_PLAN_v0.5.md).
 
 After the course, retain React and the Python services and deploy a small portfolio edition on **Railway**. Start with two services: one application service serving the built React frontend and Python API, and one MySQL service with persistent storage. Use synthetic data, preprocessed evidence and separately authorised model credentials. Budget **USD 20–35/month for hosting as an initial planning allowance**, then revise from measured usage; model charges, backups, domain registration and taxes are additional.
 

@@ -1,8 +1,18 @@
-# Client Q&A
+# Client Q&A log
 
-- Send questions through the course director as instructed in the client brief. Record the client’s response here.
-- John coordinates; source owners draft
+**Updated:** 16 Nov 2026 (SGT). Jeffrey helps frame concise client-facing wording; A/B supply source facts; John validates technical accuracy and sends through the course director, subject **Client question — Team 2**. A/B verify source-specific wording. These are draft questions only: no email has been sent by the agent and no response is assumed. Leave Date sent empty until actually sent.
 
-| ID | Date sent | Question | Client response | Decision / project impact | Status |
-|:--:|:---------:|---|---|---|:------:|
-| Q01 | YYYY-MM-DD | ... | ... | ... | Pending |
+Evidence: [package checklist](../05-Reviews/package_checklist.md) and [data audit](../05-Reviews/data_audit.md). First check the downloaded archive and separate NTULearn attachments; revise questions if the missing items are found there. Do not include client records or personal identifiers in the log.
+
+| ID | Drafted | Date sent | Question for client | Client response | Decision / impact | Owner | Status |
+|---|---|---|---|---|---|---|---|
+| Q01 | 16 Nov 2026 | — | The extracted `tabular/` directory is empty. Could you provide the CS case log, or identify its separate download location? Which date defines the complaint's reporting week, and how should repeat cases for the same order be counted? | — | Authoritative weekly complaint counts and duplicate handling remain unresolved; email counts may only be a separately labelled proxy if approved. | B / John sends | Draft — not sent |
+| Q02 | 16 Nov 2026 | — | We cannot find the CS Resolution Guide. Could you provide the current guide, its effective dates and any earlier versions needed for these cases? Should resolutions follow the policy at order/complaint time or the current policy? | — | No policy-backed refund, compensation or rejection recommendation until applicable rules are available. Evidence summaries and explicit abstention can still work. | A/B / John sends | Draft — not sent |
+| Q03 | 16 Nov 2026 | — | We received only the rate card effective 1 April 2026, while orders start in October 2025. Could you provide earlier applicable cards, or confirm that pricing questions should be restricted to orders from 1 April 2026? | — | Historical pricing cannot use the April card retroactively without confirmation. | A/B / John sends | Draft — not sent |
+| Q04 | 16 Nov 2026 | — | What authoritative rule maps an order/address/postal code to the rate-card zones and weekly reporting zones? Where are service tier and surcharge inputs recorded (such as same-day service, CBD timing, holiday service and re-attempt number), and should reporting zones equal pricing zones? | — | Zone reporting and complete rate calculation need agreed definitions and available inputs; retain unknown attribution. | B / John sends | Draft — not sent |
+| Q05 | 16 Nov 2026 | — | All 80 supplied POD filenames identify v1, whereas the export includes v2 orders. Is this the intended sample, or are there additional v2 PODs? Does the deliveries export contain complete attempt history or only a selected/latest event? | — | Missing PODs and absent attempt history must be presented as unavailable evidence, not proof of failed delivery. | A/B / John sends | Draft — not sent |
+| Q06 | 16 Nov 2026 | — | GPS timestamps are numeric epochs; delivery timestamps have no timezone label. What timezone/clock convention does each source use, are any known offsets present, and is the GPS sample intentionally sparse? | — | Preserve raw timestamps; validate alignment before normalising or claiming location evidence. | B / John sends | Draft — not sent |
+
+## Response handling
+
+John records the actual send date, reply/date and resulting decision. Owners link the answer to affected cleaning rules, contracts and regression cases. Mark unanswered questions explicitly; a draft or pending reply does not satisfy a checkpoint claim that a response has been received. Use [delivery RID](../01-Plans_Status/delivery_RID.md) for delivery risks, not duplicate copies of client correspondence.
