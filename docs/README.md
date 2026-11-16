@@ -24,12 +24,13 @@ docs/
 | [Documentation index](README.md) | `docs/` | Navigate the project documentation. |
 | [Client brief](00-Biz_Requirements/CLIENT_BRIEF.md) | `00-Biz_Requirements/` | Client requirements, constraints and engagement rules. |
 | [Client Q&A](00-Biz_Requirements/client_qa.md) | `00-Biz_Requirements/` | Track questions, client responses and project impacts. |
-| [Team plan v0.3](01-Plans_Status/Capstone_TEAM_PLAN_v0.3.md) | `01-Plans_Status/` | Plan workstreams, responsibilities and milestones. |
+| [Team plan v0.5](01-Plans_Status/Capstone_TEAM_PLAN_v0.5.md) | `01-Plans_Status/` | Plan workstreams, responsibilities and milestones. |
 | [Developer A task list](01-Plans_Status/Developer-A_tasklist.md) | `01-Plans_Status/` | Track Developer A's tasks. |
 | [Developer B task list](01-Plans_Status/Developer-B_tasklist.md) | `01-Plans_Status/` | Track Developer B's tasks. |
 | [Developer C task list](01-Plans_Status/Developer-C_tasklist.md) | `01-Plans_Status/` | Track Developer C's tasks. |
 | [Developer D task list](01-Plans_Status/Developer-D_tasklist.md) | `01-Plans_Status/` | Track Developer D's tasks. |
-| [Name-A task list](01-Plans_Status/Name-A_tasklist.md) | `01-Plans_Status/` | Task list format and status legend. |
+| [Developer E task list](01-Plans_Status/Developer-E_tasklist.md) | `01-Plans_Status/` | Track Ho Wai Hong's setup, eval and integration tasks. |
+| [Name-A task list](Archive/Name-A_tasklist.md) | `Archive/` | Task list format and status legend. |
 | [Delivery RID log](01-Plans_Status/delivery_RID.md) | `01-Plans_Status/` | Track risks, issues and decisions. |
 | [Team work guide](01-Plans_Status/TEAM_WORK_GUIDE.md) | `01-Plans_Status/` | Daily Git, PR review, handoff and checkpoint workflow. |
 | [Architecture](02-Design/architecture.md) | `02-Design/` | Document the application architecture. |
@@ -44,5 +45,6 @@ docs/
 | [Trap list](05-Reviews/trap_list.md) | `05-Reviews/` | Record evidence-backed data traps. |
 | [Demo checklist](06-Releases/demo_checklist.md) | `06-Releases/` | Prepare the demo, evidence, fallback and submission checks. |
 | [Retrospective](06-Releases/retrospective.md) | `06-Releases/` | Capture lessons, limitations and tradeoffs. |
-| [Team plan v0.2](Archive/Capstone_TEAM_PLAN_%20v0.2.md) | `Archive/` | Preserve the superseded v0.2 team plan. |
+| [Team plan v0.2](Archive/Capstone_TEAM_PLAN_v0.2.md) | `Archive/` | Preserve the superseded v0.2 team plan. |
+| [Team plan v0.4](Archive/Capstone_TEAM_PLAN_v0.4.md) | `Archive/` | Preserve the earlier four-developer plan. |
 | [Original team plan](Archive/TEAM_PLAN.md) | `Archive/` | Preserve the earlier team plan. |
