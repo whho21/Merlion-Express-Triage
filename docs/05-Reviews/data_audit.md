@@ -93,3 +93,6 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
 - Rate card: extract once into a versioned table (`effective_from` 2026-04-01), with explicit band-boundary rules
   once the client answers.
 - Policy search: **blocked** until the Resolution Guide arrives.
+- **Status 16 Nov:** POD + rate-card extraction, cache, SQL validation, `search_emails` / `search_policy` and 12
+  eval cases are built (`backend/unstructured/`); the paid image run waits for the team key. See
+  `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md`.

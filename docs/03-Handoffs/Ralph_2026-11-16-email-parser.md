@@ -26,7 +26,8 @@
   arrives and we know its format.
 - Masking now sits with B/C/D. Names inside free text are not caught by `masking.py` rules (none seen in the
   90 emails, but POD `received_by` has names), so the guardrail must check names too.
-- `search_emails` / `search_policy` (task 7) and POD / rate-card extraction (task 5) not started.
+- ~~`search_emails` / `search_policy` (task 7) and POD / rate-card extraction (task 5) not started.~~ Built later
+  on 16 Nov — see `Ralph_2026-11-16-A-tools-evidence-limits.md`.
 
 ## Next Step
 

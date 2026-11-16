@@ -1,36 +1,48 @@
 # backend/unstructured — Developer A
 
-Complaint emails and the Resolution Guide (policy) → cited records. POD and rate-card extraction come next
-(task 5). Standard library only, no LLM calls, so no API spend.
+Emails, the Resolution Guide (policy), proof-of-delivery (POD) cards and rate cards → cited records and search
+tools for B and C. Standard library only (any Python 3.9+), so nothing to install.
 
 **Records are unmasked on purpose** (John, 16 Nov): A extracts everything; B/C/D hide personal data before the AI
-model or a customer sees it. `masking.py` is a ready helper they can reuse.
+model or a customer sees it. `masking.py` is a ready helper they can reuse. Outputs live in `output/unstructured/`
+(git-ignored — they hold real personal data; never commit or copy them elsewhere).
 
 ## Run (from the repo root, after unzipping the package into `data/`)
 
 ```bash
-python -m backend.unstructured.ingest                              # data/ → output/unstructured/
-python -m unittest discover -s backend/unstructured/tests -t .     # 28 tests, synthetic data only
+python -m backend.unstructured.ingest                         # emails + policy -> emails.jsonl, policy_chunks.jsonl, manifest.json (free)
+python -m backend.unstructured.extract_images --dry-run       # free: how many images would be sent to the model
+python -m backend.unstructured.extract_images --limit 2       # paid smoke test (2 POD cards + the rate card)
+python -m backend.unstructured.extract_images                 # paid: every image not already cached
+python -m backend.unstructured.evals                          # A's 12 eval cases: PASS / FAIL / PENDING
+python -m unittest discover -s backend/unstructured/tests -t .   # 60 unit tests, synthetic data, no network
 ```
 
-Outputs go to `output/unstructured/` (git-ignored, never commit — they hold real personal data): `emails.jsonl`,
-`policy_chunks.jsonl`, and
-`manifest.json` with one outcome per input file (sha256, parser version, status, issues). Exit code is 1 if the
-email folder is missing or any email fails, so failures are visible.
+The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
+It never reads a `.env` in a parent folder, so the class key is never spent by accident. Optional settings:
+`A_VISION_MODEL` (default `gpt-4o-mini`), `OPENAI_BASE_URL`.
 
 ## Files
 
 | File | What it does |
 |---|---|
-| `masking.py` | Shared helper for B/C/D: masks emails, NRIC, SG phone numbers, unit numbers, postal codes and block numbers. Names in free text are **not** detected. A uses it only to count (`pii_detected`). |
-| `emails.py` | Keeps sender, recipient, subject and full body as written; sorts into 7 categories (+ `unclassified`); pulls order numbers, driver codes, corporate account and customer claims, each with a `body:char:<a>-<b>` locator. |
-| `policy.py` | Finds the guide by name under `data/tabular/` or `data/docs/`, splits `.md`/`.txt` by heading and `.csv` by row. Today it records `SOURCE_MISSING` (client question A-Q1). |
-| `ingest.py` | Runs both, writes outputs and the manifest, prints a summary of counts only (no personal data). |
+| `emails.py` | Keeps sender, recipient, subject and body as written; 7 categories (+ `unclassified`); order numbers, driver codes, corporate account and customer claims, each with a `body:char:<a>-<b>` locator. |
+| `policy.py` | Finds the guide under `data/tabular/` or `data/docs/`; `.md`/`.txt` by heading, `.csv` by row. Today: `SOURCE_MISSING` (client question A-Q1). |
+| `ingest.py` | Runs both; writes outputs + a per-file manifest; prints counts only. |
+| `llm.py` | Calls the class vision endpoint: JSON answers, 3 bounded retries, one telemetry line per call (no content). |
+| `cache.py` | Caches each answer by image hash + prompt version + model, so reruns cost nothing (task 6). |
+| `sqlref.py` | Read-only reference from the SQL dump to validate POD cards (B still owns the database). |
+| `pod.py` | POD prompt, normalisation (day-first dates, look-alike fixes, receiver kind), confidence, SQL validation, flags, `find_pod`. |
+| `ratecard.py` | Rate-card prompt and parsing (bands, prices, surcharges, notes) and `lookup_rate` (not_found before the card's date, ambiguous on band edges). |
+| `extract_images.py` | Runs POD + rate-card extraction with cache, manifest, telemetry and SQL validation. |
+| `search.py` | `search_emails(query, order_number=None)` and `search_policy(query, effective_date=None)` for C, with exact citations. |
+| `evals.py` | Runs `evals/developer_a_cases.json`. |
+| `masking.py` | Shared helper for B/C/D: masks emails, NRIC, phones, unit numbers, postal codes, block numbers (not names). |
 
-Record shapes and rules: `docs/02-Design/contracts.md` section 4. Traps: `docs/05-Reviews/trap_list.md`.
+Record shapes, envelopes and telemetry: `docs/02-Design/contracts.md` sections 2–6. Traps: `docs/05-Reviews/trap_list.md`.
+Limits and evidence for B/C/D: `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md`.
 
 ## Not done here (on purpose)
 
-- Choosing v1 vs v2 for an order number — B's candidate lookup (trap T-A01). This code passes the number and the
-  email date.
-- `search_emails` / `search_policy` tools — task 7, on top of these records.
+- Choosing v1 vs v2 for an email's order number — B's candidate lookup (T-A01). A passes the number and the email date.
+- Masking — B/C/D (John, 16 Nov).
