@@ -1,0 +1,60 @@
+{
+  "owner": "Developer D (Jeffrey)",
+  "about": "Customer-journey cases for the shared runner (E). DRAFT: inputs are synthetic placeholders; A/B/C confirm the factual expectations against the real package and swap in a local-only fixture path (never committed client text). Expectations check behaviour the client sees: clarification, citations, honest abstention and visible errors. Plan v0.5 §6: D contributes 3 cases.",
+  "status": "draft — expectations to be verified by C (API shape) and B (identity facts)",
+  "cases": [
+    {
+      "id": "D-J01",
+      "category": "journey/clarification",
+      "title": "Order number that exists in v1 and v2 -> assistant asks which system; no recommendation yet",
+      "input": {"email_text": "<local fixture: complaint email whose order number exists in both systems; B to pick one from the package>"},
+      "call": "POST /api/complaints",
+      "expect": [
+        {"path": "status", "equals": "ambiguous"},
+        {"path": "candidates", "min_length": 2},
+        {"path": "candidates.*.system_version", "contains_all": ["v1", "v2"]},
+        {"path": "recommendation", "equals": null},
+        {"path": "clarification.question", "nonempty": true}
+      ],
+      "follow_up": {
+        "call": "POST /api/sessions/{session_id}/messages",
+        "body": {"selected_candidate": {"system_version": "v1", "order_id": "<same order id>"}},
+        "expect": [
+          {"path": "session_id", "equals_previous": true},
+          {"path": "order.system_version", "equals": "v1"},
+          {"path": "status", "in": ["found", "partial", "not_found"]}
+        ]
+      }
+    },
+    {
+      "id": "D-J02",
+      "category": "journey/citations",
+      "title": "Normal post-February complaint -> recommendation cites guide row + SQL record; POD reported as not on file",
+      "input": {"email_text": "<local fixture: late-delivery email for an order after 1 Feb 2026>"},
+      "call": "POST /api/complaints",
+      "expect": [
+        {"path": "status", "in": ["found", "partial"]},
+        {"path": "recommendation.citations", "min_length": 1},
+        {"path": "citations.*.source_id", "contains_prefix": "policy:"},
+        {"path": "citations.*.type", "contains": "sql"},
+        {"path": "evidence[key=pod].status", "equals": "not_found"},
+        {"path": "every_citation_ref_resolves", "equals": true}
+      ]
+    },
+    {
+      "id": "D-J03",
+      "category": "journey/error-recovery",
+      "title": "Dependency down -> safe error with retryable flag; after restore, retry succeeds in the same UI",
+      "input": {"email_text": "<any synthetic complaint>", "setup": "stop MySQL (or C's documented fault switch) before the call"},
+      "call": "POST /api/complaints",
+      "expect": [
+        {"path": "http_status_or_status", "in": [503, "failed"]},
+        {"path": "error.retryable", "equals": true},
+        {"path": "error.message", "not_contains_any": ["Traceback", "OPENAI_API_KEY", "password"]}
+      ],
+      "after_restore": {
+        "expect": [{"path": "status", "in": ["found", "partial", "ambiguous", "not_found"]}]
+      }
+    }
+  ]
+}
