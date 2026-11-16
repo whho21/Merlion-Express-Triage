@@ -118,8 +118,11 @@ def normalise(answer: Dict[str, Any], file_system: str, file_order_id: int) -> D
     fields["received_by"] = _field(received, "low" if "received_by" in unreadable else "high", kind=kind, role=role)
 
     signed = answer.get("signature_present")
-    fields["signature"] = _field({True: "present", False: "absent"}.get(signed),
-                                 "high" if isinstance(signed, bool) else "low")
+    # "absent" is never trusted on the model's word: SQL can't confirm it, and the 16 Nov run missed one short stroke
+    sig_conf = "high" if signed is True else ("medium" if signed is False else "low")
+    fields["signature"] = _field({True: "present", False: "absent"}.get(signed), sig_conf)
+    if signed is False:
+        flags.append("signature_absent_verify_by_eye")
 
     remarks = answer.get("remarks")
     fields["remarks"] = _field(remarks, "low" if "remarks" in unreadable else "high")
@@ -128,10 +131,11 @@ def normalise(answer: Dict[str, Any], file_system: str, file_order_id: int) -> D
 
     if remarks and LEFT_OUTSIDE_RE.search(remarks) and signed is True:
         flags.append("remark_contradicts_signature")
-    if remarks and re.search(r"\bneighbou?r\b", remarks, re.I) and role not in ("neighbour", "neighbor"):
+    # Only a ROLE that clashes counts (e.g. remark "neighbour take", receiver "mum"); a name could be the neighbour's.
+    if remarks and re.search(r"\bneighbou?r\b", remarks, re.I) and kind == "role" and role not in ("neighbour", "neighbor"):
         flags.append("remark_contradicts_receiver")
     for name, f in fields.items():
-        if f["confidence"] == "medium":
+        if f["confidence"] == "medium" and name != "signature":
             flags.append(f"lookalike_repaired:{name}")
         elif f["confidence"] == "low" and name not in ("received_by", "remarks", "delivered_to", "block"):
             flags.append(f"low_confidence:{name}")

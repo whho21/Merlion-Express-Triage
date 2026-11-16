@@ -148,12 +148,29 @@ def run(data_dir: Path, out_dir: Path, *, limit: Optional[int] = None, only: Opt
                      "effective_from": [c.get("effective_from") for c in cards]},
         "calls": dict(ex.counts),
         "model": ex.cfg["model"],
+        "spend": record_spend(out_dir, ex.cfg["model"], ex.counts),
     }
     manifest = {"run_at": _now(), "prompts": {"pod": pod.PROMPT_VERSION, "ratecard": ratecard.PROMPT_VERSION},
                 "summary": summary, "files": entries}
     (out_dir / "image_manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
                                                  encoding="utf-8")
     return manifest
+
+
+def record_spend(out_dir: Path, model: str, counts: Counter) -> Dict[str, Any]:
+    """Append this run to spend_log.jsonl and return this run's and the running total cost (estimates)."""
+    run_cost = llm.estimate_cost(model, counts["prompt_tokens"], counts["completion_tokens"])
+    entry = {"run_at": _now(), "tool": "extract_images", "model": model, "paid_calls": counts["paid_call"],
+             "failed_calls": counts["failed_call"], "cache_hits": counts["cache_hit"],
+             "prompt_tokens": counts["prompt_tokens"], "completion_tokens": counts["completion_tokens"],
+             "est_cost_usd": run_cost}
+    log = out_dir / "spend_log.jsonl"
+    with log.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(entry) + "\n")
+    rows = [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines() if line.strip()]
+    total = round(sum(r.get("est_cost_usd") or 0 for r in rows), 6)
+    return {"this_run_usd": run_cost, "a_total_usd": total, "team_budget_usd": llm.TEAM_BUDGET_USD,
+            "budget_used_pct": round(100 * total / llm.TEAM_BUDGET_USD, 3)}
 
 
 def dry_run(data_dir: Path, out_dir: Path, limit: Optional[int], only: Optional[str], cfg: Dict[str, Optional[str]]) -> Dict[str, Any]:

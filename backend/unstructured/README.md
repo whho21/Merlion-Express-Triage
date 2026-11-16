@@ -15,12 +15,14 @@ python -m backend.unstructured.extract_images --dry-run       # free: how many i
 python -m backend.unstructured.extract_images --limit 2       # paid smoke test (2 POD cards + the rate card)
 python -m backend.unstructured.extract_images                 # paid: every image not already cached
 python -m backend.unstructured.evals                          # A's 12 eval cases: PASS / FAIL / PENDING
-python -m unittest discover -s backend/unstructured/tests -t .   # 60 unit tests, synthetic data, no network
+python -m unittest discover -s backend/unstructured/tests -t .   # 63 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
 It never reads a `.env` in a parent folder, so the class key is never spent by accident. Optional settings:
-`A_VISION_MODEL` (default `gpt-4o-mini`), `OPENAI_BASE_URL`.
+`A_VISION_MODEL` (default `gpt-4o-mini`), `OPENAI_BASE_URL`. Every run appends its estimated cost to
+`output/unstructured/spend_log.jsonl` and prints the running total against the US$50 team budget; the shared
+record is `docs/04-Testing_Evals/api_spend.md`. First full run (16 Nov): 81 images, about US$0.32.
 
 ## Files
 

@@ -10,18 +10,32 @@ What B, C and D can use now (all in `backend/unstructured/`, standard library on
 
 | For | What | Status |
 |---|---|---|
-| B | `pod_records.jsonl` — one record per POD card, validated against SQL (contracts §2) | Code done, 60 unit tests pass. **Real run waits for the team key** |
-| B | `rate_cards.jsonl` + `ratecard.lookup_rate()` for `get_rate` (contracts §3) | Same |
+| B | `pod_records.jsonl` — one record per POD card, validated against SQL (contracts §2) | **Done: 80/80 read, 80/80 key fields match SQL** |
+| B | `rate_cards.jsonl` + `ratecard.lookup_rate()` for `get_rate` (contracts §3) | **Done: 12/12 prices match a by-eye reading** |
 | B | `pod.find_pod()` for `get_pod` — `not_found` for any v2 order | Done |
 | C | `search_emails(query, order_number=None)` — exact `body:char` citations (contracts §5) | **Working on the real 90 emails** |
 | C | `search_policy(query, effective_date=None)` — `failed / SOURCE_MISSING` until the guide arrives | Working |
 | C | Telemetry lines per call: tokens, latency, cache hit/miss, no content (contracts §6) | Draft until C's contract |
-| D | `evals/developer_a_cases.json` — 12 cases; `python -m backend.unstructured.evals` | 6 pass, 6 pending the image run |
+| D | `evals/developer_a_cases.json` — 12 cases; `python -m backend.unstructured.evals` | **12/12 pass** |
 
-Checks run 16 Nov: 60 unit tests pass (synthetic data, fake model, no network). Real data: ingest 90/90 emails ok;
-SQL reference loads 25,833 orders and 24,802 deliveries (same as B's MySQL load); dry run = 80 POD cards + 1 rate
-card to send, 0 cached; a card read by eye (`POD_v1_24377`, with the "I8" look-alike) goes through validation with
-every key field matching SQL and the look-alike flagged.
+Checks run 16 Nov: 63 unit tests pass (synthetic data, fake model, no network). Real data: ingest 90/90 emails ok;
+SQL reference loads 25,833 orders and 24,802 deliveries (same as B's MySQL load).
+
+**Image run, 16 Nov (gpt-4o-mini, team key, US$0.32 total — see `docs/04-Testing_Evals/api_spend.md`):**
+- POD: 80/80 `ok`; order, delivered time, driver, postal code and block match SQL on **80/80**. Every field read
+  with high confidence. Flags: COD conflict with SQL 25 (9 card amounts differ + 16 SQL COD not on the card),
+  "left outside" but signed 7, "neighbour" remark vs a role receiver 4, signature reported absent 1 — all equal to
+  the by-eye audit except the last (see limitation 7).
+- Rate card: effective 2026-04-01, 12/12 prices and all surcharges/notes match a by-eye reading. Status `partial`
+  on purpose: the model dropped the "+" on the CBD ERP row; code treats it as a surcharge by its label and flags
+  `SURCHARGE_SIGN_MISSING`.
+
+**One image-derived cited answer (task 5):** "When was v1 order 24377 delivered, and by whom?" →
+`find_pod("v1", 24377)` = found: delivered 2025-11-18 09:26 by DRV007, cited `pod:v1:24377`
+(`data/images/proof_of_delivery/POD_v1_24377.jpg`, `field:delivered_at`, `field:driver_code`), and both values
+match SQL `deliveries`. The same question for the v2 order 22574 → `not_found: no POD scan on file`.
+A rate example: `lookup_rate(zone="Central", weight_kg=5, on_date="2026-05-01")` → found, cited
+`ratecard:2026-04-01` `row:Central/col:3-10kg`; at 10 kg → `ambiguous`; on 2026-01-15 → `not_found`.
 
 Cost control (task 6): answers are cached by image hash + prompt version + model, so a rerun is free; only failed
 reads are retried. `--dry-run` shows the count before any spend; `--limit 2` is a cheap smoke test.
@@ -48,16 +62,20 @@ reads are retried. `--dry-run` shows the count before any spend; `--limit 2` is 
    fields SQL doesn't hold (receiver, remarks, signature) can't be cross-checked.
 5. **Records are unmasked by team decision**; masking (including names, which no rule catches) is B/C/D's.
 6. **Email search is keyword-based**; fine for 90 short template emails, weaker for paraphrased questions.
+7. **Signature presence is the model's judgement** and SQL can't check it. The run reported one signed card
+   (`pod:v1:20659`, a short single stroke) as unsigned; checked by eye, it is signed. Any "absent" is therefore
+   flagged `signature_absent_verify_by_eye` and must not be stated as fact.
+8. **The model tidies look-alikes itself** (it returned "18/11" for the printed "I8/11" on `24377`), so the
+   look-alike flag rarely fires; SQL validation is what catches a wrong key field.
 
 ## Remaining
 
-- Paid image run (needs the team key in the team repo `.env`): `--limit 2` first, then all; then the 6 pending evals.
-- Task 5's "one image-derived cited answer" demo — after the run (e.g. `find_pod("v1", 24377)` with its citation).
-- Agree contracts §2–§6 with B/C at the 17 Nov sync (task 3); fold A's eval cases into D's runner.
-- Refresh the evidence table with the real extraction numbers after the run.
+- Agree contracts §2–§6 with B/C at the 17 Nov sync (task 3); fold A's eval cases into D's runner (task 8).
+- B/C start using the records and tools (task 7). C's shared telemetry contract replaces §6 if different.
 
 ## Next Step
 
-- Ralph: put the team key into the team repo `.env` (never commit it), then run the smoke test.
-- B: load `pod_records.jsonl` / `rate_cards.jsonl` keyed by `(source_system, order_id)`; use `lookup_rate` for `get_rate`.
+- B: load `pod_records.jsonl` / `rate_cards.jsonl` keyed by `(source_system, order_id)`; use `lookup_rate` for
+  `get_rate`. Ask Ralph for the files (they're unmasked and git-ignored — share by hand, never commit).
 - C: call `search_emails` / `search_policy`; mask before the model sees the text.
+- D: run `python -m backend.unstructured.evals` (12 cases) or fold `evals/developer_a_cases.json` into the runner.

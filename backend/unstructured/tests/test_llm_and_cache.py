@@ -77,6 +77,12 @@ class VisionJsonTests(unittest.TestCase):
         self.assertEqual((ctx.exception.code, fake.calls), ("NO_API_KEY", []))
 
 
+class CostTests(unittest.TestCase):
+    def test_estimate_cost(self):
+        self.assertEqual(llm.estimate_cost("gpt-4o-mini", 1_000_000, 1_000_000), 0.75)
+        self.assertIsNone(llm.estimate_cost("unknown-model", 10, 10))
+
+
 class SettingsTests(unittest.TestCase):
     def test_reads_only_the_repo_root_env(self):
         with tempfile.TemporaryDirectory() as tmp:

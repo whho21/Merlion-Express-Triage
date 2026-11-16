@@ -23,6 +23,23 @@ from typing import Any, Callable, Dict, Optional, Tuple
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_MODEL = "gpt-4o-mini"
 RETRYABLE_HTTP = {408, 409, 429, 500, 502, 503, 504}
+TEAM_BUDGET_USD = 50.0  # team key sheet, 16 Nov: hard budget for the whole project, monitored weekly
+
+# US$ per 1M tokens (input, output), OpenAI list prices; image tokens are already inside prompt_tokens.
+# Estimates only: the provider's usage page is the source of truth. Unknown model -> cost None.
+PRICES_USD_PER_MTOK = {
+    "gpt-4o-mini": (0.15, 0.60),
+    "gpt-4o": (2.50, 10.00),
+    "gpt-4.1-mini": (0.40, 1.60),
+    "gpt-4.1": (2.00, 8.00),
+}
+
+
+def estimate_cost(model: str, prompt_tokens: int, completion_tokens: int) -> Optional[float]:
+    price = PRICES_USD_PER_MTOK.get(model)
+    if price is None:
+        return None
+    return round((prompt_tokens * price[0] + completion_tokens * price[1]) / 1_000_000, 6)
 
 # transport(url, headers, body, timeout) -> (http_status, response_body). Injected in tests; no network there.
 Transport = Callable[[str, Dict[str, str], bytes, float], Tuple[int, bytes]]
@@ -135,5 +152,6 @@ def vision_json(image: bytes, mime: str, prompt: str, *, api_key: Optional[str],
     usage = payload.get("usage") or {}
     tokens = {"prompt_tokens": int(usage.get("prompt_tokens", 0)),
               "completion_tokens": int(usage.get("completion_tokens", 0))}
-    log_telemetry(telemetry_path, status="ok", **tokens, **common)
+    log_telemetry(telemetry_path, status="ok", **tokens,
+                  cost_usd=estimate_cost(model, tokens["prompt_tokens"], tokens["completion_tokens"]), **common)
     return answer, tokens

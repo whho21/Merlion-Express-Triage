@@ -28,6 +28,7 @@ MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "
                                       "september", "october", "november", "december"], start=1)}
 EFFECTIVE_RE = re.compile(r"effective\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", re.I)
 PRICE_RE = re.compile(r"^\s*(\+)?\s*\$\s?(\d+(?:\.\d{1,2})?)\s*$")
+SURCHARGE_LABEL_RE = re.compile(r"\b(ERP|surcharge|peak|hours?)\b", re.I)
 BAND_RE = re.compile(r"^\s*(?:<=|≤|up to)\s*(\d+(?:\.\d+)?)\s*kg\s*$|^\s*(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*kg\s*$",
                      re.I)
 
@@ -92,7 +93,12 @@ def normalise(answer: Dict[str, Any], *, source_id: str, image_ref: str, image_s
         label, cells = (row.get("label") or "").strip(), row.get("cells") or []
         prices = [_price(c) for c in cells]
         head = [p for p in prices[: len(bands)] if p]
-        if head and all(p["is_surcharge"] for p in head):  # a "+$" row, e.g. "CBD ERP hours (0730-1900)"
+        signed = bool(head) and all(p["is_surcharge"] for p in head)
+        by_label = bool(SURCHARGE_LABEL_RE.search(label))
+        if head and (signed or by_label):  # a surcharge row, e.g. "CBD ERP hours (0730-1900)" printed as "+$1.50"
+            if by_label and not signed:  # seen 16 Nov: the model dropped the "+" on this row
+                issues.append({"code": "SURCHARGE_SIGN_MISSING",
+                               "message": f"row {label!r} read without '+'; treated as a surcharge by its label"})
             for band, p in zip(bands, prices):
                 if p:
                     surcharges.append({"name": label, "band": band["band"], "amount": p["amount"]})

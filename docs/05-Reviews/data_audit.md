@@ -94,5 +94,6 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
   once the client answers.
 - Policy search: **blocked** until the Resolution Guide arrives.
 - **Status 16 Nov:** POD + rate-card extraction, cache, SQL validation, `search_emails` / `search_policy` and 12
-  eval cases are built (`backend/unstructured/`); the paid image run waits for the team key. See
-  `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md`.
+  eval cases are built (`backend/unstructured/`). **Image run done with the team key: 80/80 POD cards match SQL on
+  every key field; rate card 12/12 prices; 12/12 evals pass; cost about US$0.32.** See
+  `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md` and `docs/04-Testing_Evals/api_spend.md`.

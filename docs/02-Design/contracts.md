@@ -78,8 +78,10 @@ Rules:
 - `validation.matches_sql` per field: `true`/`false`, `null` = nothing to compare. A mismatch adds
   `sql_mismatch:<field>` and makes the record `partial`. `cod.conflict`: `true` (amounts differ) or
   `"sql_cod_not_on_card"`; both add `cod_conflict_with_sql` (T-A08: show both values, never pick one).
-- Other flags: `remark_contradicts_signature`, `remark_contradicts_receiver` (T-A09), `model_unreadable:<key>`,
-  `order_ref_differs_from_file_name`.
+- Other flags: `remark_contradicts_signature` ("left outside" but signed), `remark_contradicts_receiver` (remark
+  says neighbour, receiver is another ROLE such as mum/front desk — T-A09), `signature_absent_verify_by_eye` (an
+  "absent" signature is never trusted on the model's word: signature `confidence: "medium"`),
+  `model_unreadable:<key>`, `order_ref_differs_from_file_name`.
 - A signature means "card signed", not proof of who received it. `received_by.kind` = name/role/blank (T-A10).
   Stored unmasked (B/C/D mask — John, 16 Nov). Committed samples stay synthetic.
 - `status`: `ok` · `partial` (a key field low, or an SQL mismatch) · `failed` (all key fields unreadable, or the model

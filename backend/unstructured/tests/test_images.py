@@ -97,6 +97,14 @@ class PodTests(unittest.TestCase):
         self.assertIn("remark_contradicts_signature", r["flags"])
         r = pod_record({**GOOD_POD, "remarks": "neighbour take", "received_by": "mum"})
         self.assertIn("remark_contradicts_receiver", r["flags"])
+        r = pod_record({**GOOD_POD, "remarks": "neighbour take", "received_by": "Test Person"})
+        self.assertNotIn("remark_contradicts_receiver", r["flags"])  # the name may be the neighbour's
+
+    def test_absent_signature_is_not_trusted(self):
+        r = pod_record({**GOOD_POD, "signature_present": False}, reference())
+        self.assertEqual((r["fields"]["signature"]["value"], r["fields"]["signature"]["confidence"]), ("absent", "medium"))
+        self.assertIn("signature_absent_verify_by_eye", r["flags"])
+        self.assertEqual(r["status"], "ok")  # key fields still fine; the flag carries the doubt
 
     def test_find_pod_never_reuses_v1_card_for_v2(self):
         records = [pod_record(GOOD_POD, reference())]
@@ -135,6 +143,16 @@ class RateCardTests(unittest.TestCase):
         self.assertEqual(early["status"], "not_found")
         self.assertIn("A-Q2", early["reason"])
 
+    def test_surcharge_row_without_plus_sign_is_still_a_surcharge(self):
+        # seen on the real card: the model copied "+$1.50" as "$1.50" for the ERP row
+        answer = {**RATE_ANSWER, "rows": RATE_ANSWER["rows"][:2] +
+                  [{"label": "CBD ERP hours (0730-1900)", "cells": ["$1.50", "$1.50", "$2.50", "—"]}]}
+        c = ratecard.normalise(answer, source_id="s", image_ref="r", image_sha256="0", extraction={})
+        self.assertEqual({r["zone"] for r in c["rows"]}, {"Central", "Island"})
+        self.assertEqual(sum(1 for s in c["surcharges"] if s["name"].startswith("CBD ERP")), 3)
+        self.assertEqual([i["code"] for i in c["issues"]], ["SURCHARGE_SIGN_MISSING"])
+        self.assertEqual(c["status"], "partial")
+
     def test_missing_price_and_date_are_visible(self):
         broken = {**RATE_ANSWER, "effective_text": "STANDARD RATE CARD",
                   "rows": [{"label": "Central", "cells": ["$1.00", None, "$3.00", "+$4.00"]}]}
@@ -167,7 +185,7 @@ class ExtractionRunTests(unittest.TestCase):
         return answer, {"prompt_tokens": 10, "completion_tokens": 5}
 
     def run_once(self):
-        cfg = {"api_key": "k", "base_url": "u", "model": "m"}
+        cfg = {"api_key": "k", "base_url": "u", "model": "gpt-4o-mini"}
         return extract_images.run(self.data, self.out, cfg=cfg, call=self.fake_call, reference=reference())
 
     def test_outcomes_cache_and_failed_retry(self):
@@ -182,6 +200,11 @@ class ExtractionRunTests(unittest.TestCase):
         self.assertEqual(second["summary"]["calls"]["cache_hit"], 2)
         pods = [json.loads(l) for l in (self.out / "pod_records.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual(len(pods), 2)
+        # spend: run 1 = 2 paid calls x (10 in + 5 out) tokens at gpt-4o-mini prices; run 2 = cache only
+        self.assertEqual(first["summary"]["spend"]["this_run_usd"], (20 * 0.15 + 10 * 0.60) / 1_000_000)
+        self.assertEqual(second["summary"]["spend"]["this_run_usd"], 0.0)
+        self.assertEqual(second["summary"]["spend"]["a_total_usd"], first["summary"]["spend"]["a_total_usd"])
+        self.assertEqual(len((self.out / "spend_log.jsonl").read_text(encoding="utf-8").splitlines()), 2)
 
     def test_dry_run_sends_nothing(self):
         cfg = {"api_key": None, "base_url": "u", "model": "m"}
