@@ -1,10 +1,13 @@
-"""PII masking done by code, before any text reaches an LLM or a user (PDPA, trap T-A19).
+"""Shared PII masking helper for B/C/D (PDPA, trap T-A19). C may move it into its guardrail module.
+
+Team decision (John, 16 Nov): A's records are UNMASKED; B/C/D mask before the AI model or a customer sees
+anything. A only uses mask_text() to COUNT personal data (emails.pii_detected), never to change records.
 
 Rules are applied in order; earlier rules win (an 8-digit phone is masked before the 6-digit postal rule runs).
 Order numbers (5 digits) and driver codes (DRV000) are deliberately left visible.
 
-Limitation: personal names inside free text are NOT detected by these rules. Sender addresses are never
-copied into records (see emails.sender_id), and C's output guardrail should still check names.
+Limitation: personal names inside free text are NOT detected by these rules; the guardrail must check names
+(e.g. the POD received_by field and email sender addresses, which are name-based).
 """
 from __future__ import annotations
 

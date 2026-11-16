@@ -17,8 +17,6 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
-from .masking import mask_text
-
 PARSER_VERSION = "policy-1.0"
 NAME_HINTS = ("guide", "policy", "resolution")
 SEARCH_DIRS = ("tabular", "docs")
@@ -40,9 +38,9 @@ def find_policy_files(data_dir: Path) -> List[Path]:
 
 
 def _chunk(source_id: str, ref: str, locator: str, text: str, heading: str = "") -> Dict[str, Any]:
-    masked, _ = mask_text(text.strip())
+    """Text is kept as written (unmasked; B/C/D mask — John, 16 Nov)."""
     return {"source_id": source_id, "type": "document", "ref": ref, "locator": locator,
-            "heading": heading, "text": masked}
+            "heading": heading, "text": text.strip()}
 
 
 def _chunk_markdown(text: str, source_id: str, ref: str) -> List[Dict[str, Any]]:

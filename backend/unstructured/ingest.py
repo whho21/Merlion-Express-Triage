@@ -3,8 +3,8 @@
     python -m backend.unstructured.ingest            # reads data/, writes output/unstructured/
     python -m backend.unstructured.ingest --data data --out output/unstructured
 
-Writes (all under output/, which git ignores — never commit them):
-    emails.jsonl          one local record per email (contracts.md section 4)
+Writes (all under output/, which git ignores — never commit them; they hold UNMASKED personal data):
+    emails.jsonl          one record per email, unmasked (contracts.md section 4)
     policy_chunks.jsonl   one chunk per guide section/row (empty until the guide arrives)
     manifest.json         one outcome per input file: sha256, parser version, status, issues
 Prints a summary with no personal data. Exit code 1 only if the email folder is missing or any email failed.
@@ -53,7 +53,7 @@ def run(data_dir: Path, out_dir: Path) -> Dict[str, Any]:
             "with_order_number": sum(1 for r in records if r["order_numbers"]),
             "with_system_prefix": sum(1 for r in records if r["system_hint"]),
             "corporate": sum(1 for r in records if r["corporate_account"]),
-            "pii_masked": dict(sum((Counter(r["pii_found"]) for r in records), Counter())),
+            "pii_detected": dict(sum((Counter(r["pii_detected"]) for r in records), Counter())),
             "issues": dict(Counter(i["code"] for r in records for i in r["issues"])),
         },
         "policy": {

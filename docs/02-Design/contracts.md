@@ -47,7 +47,7 @@ Follows the team plan's citation shape, with A's locators filled in.
     "delivered_at":   {"value": "2025-10-02T16:16", "raw": "02/10/2025 16:16", "tz": "Asia/Singapore (assumed)", "confidence": "high"},
     "driver_code":    {"value": "DRV000",           "confidence": "high"},
     "postal_code":    {"value": "000000",           "confidence": "high"},
-    "received_by":    {"value": "[MASKED]", "kind": "name|role|blank", "role": null, "confidence": "medium"},
+    "received_by":    {"value": "A. Tan (synthetic)", "kind": "name|role|blank", "role": null, "confidence": "medium"},
     "signature":      {"value": "present",          "confidence": "high"},
     "remarks":        {"value": "COD collected $10","confidence": "high"},
     "cod_on_card":    {"value": 10.00, "currency": "SGD", "confidence": "high"}
@@ -62,8 +62,8 @@ Follows the team plan's citation shape, with A's locators filled in.
 Rules:
 - `raw` keeps the printed text; `value` is normalised (dates day-first, see trap T-A12).
 - An unclear character never gets guessed: `confidence: "low"` plus `flags: ["low_confidence:<field>"]`.
-- `received_by.value` is masked in anything committed or shown. `kind` records whether it is a name or a role
-  (T-A10).
+- `received_by.value` is stored as read (unmasked; B/C/D mask before showing — John, 16 Nov). `kind` records
+  whether it is a name or a role (T-A10). Committed samples stay synthetic.
 - `status`: `ok` · `partial` (some fields low confidence) · `failed` (unreadable). Failed records are still emitted.
 
 ### 3. Rate card record (A produces → B loads)
@@ -89,8 +89,8 @@ to the April card silently (T-A15).
 
 ### 4. Email record (A produces → C consumes via `search_emails`)
 
-Built by `python -m backend.unstructured.ingest` → `output/unstructured/emails.jsonl` (git-ignored). Public view
-(what leaves A's tools) shown:
+Built by `python -m backend.unstructured.ingest` → `output/unstructured/emails.jsonl` (git-ignored). **Unmasked**
+(John, 16 Nov: A extracts everything; B/C/D mask). Synthetic sample:
 
 ```json
 {
@@ -101,30 +101,33 @@ Built by `python -m backend.unstructured.ingest` → `output/unstructured/emails
   "status": "ok",
   "issues": [],
   "received_at": "2026-01-01T10:00:00+08:00",
-  "sender_id": "sender:0123456789ab",
+  "sender": "someone@example.com",
+  "to": "support@example.com",
   "subject": "Wrong address delivered",
   "category": "wrong_address|missing_item|where_is_parcel|cod_wrong|late|thrown_over_gate|compliment|unclassified",
   "is_complaint": true,
   "order_numbers": ["99999"],
   "system_hint": null,
   "more_orders_unspecified": false,
-  "claims": {"stay_block": "[MASKED]", "pod_block": "[MASKED]", "days_ago": null, "amount_extra": null, "status_claimed": null},
+  "claims": {"stay_block": "111", "pod_block": "222", "days_ago": null, "amount_extra": null, "status_claimed": null},
   "driver_codes": [],
   "corporate_account": null,
-  "pii_found": {"block": 2},
-  "pii_masked_body": "You delivered my parcel to the wrong block!! I stay blk [BLOCK] but the POD photo shows blk [BLOCK]. Order 99999. Please retrieve ASAP.",
-  "locators": {"received_at": "header:Date", "subject": "header:Subject", "order_numbers": ["body:char:99-104"],
-               "claims": {"stay_block": "body:char:56-59", "pod_block": "body:char:88-91"}, "body_offset_in_file": 122}
+  "pii_detected": {"block": 2},
+  "body": "You delivered my parcel to the wrong block!! I stay blk 111 but the POD photo shows blk 222. Order 99999. Please retrieve ASAP.\n",
+  "locators": {"received_at": "header:Date", "sender": "header:From", "subject": "header:Subject",
+               "body_offset_in_file": 122, "order_numbers": ["body:char:99-104"],
+               "claims": {"stay_block": "body:char:56-59", "pod_block": "body:char:88-91"}}
 }
 ```
 
 Rules:
-- The sender address is never stored. `sender_id` is a hash prefix, so repeat senders can still be grouped.
+- **Nothing is masked in A's records.** `sender`, `to`, `body` and the claimed blocks are personal data. B/C/D
+  must mask them before the AI model or a customer sees them. `pii_detected` counts what
+  `backend/unstructured/masking.py` would hide (email, NRIC, phone, unit, postal, block); B/C/D may reuse it.
+  Names in free text are not detected by rule.
 - `system_hint` is set only when the email itself writes `V1-`/`V2-`. Choosing v1 or v2 is B's candidate lookup
   (T-A01). A passes the number + `received_at` so B can rule out orders created after the email (T-A02/T-A03).
-- The local record keeps the claimed block numbers so code can compare them with SQL (T-A07); `public_view()`
-  masks them before anything reaches C or the LLM.
-- `body:char:<a>-<b>` counts characters in the body (after the blank line, line endings as `\n`);
+- `body:char:<a>-<b>` indexes into `body` (the text after the blank line, line endings as `\n`);
   `body_offset_in_file` gives the body's start in the file.
 - `status`: `ok` · `partial` (no order number in a complaint, unknown category, bad date, several numbers) ·
   `failed` (not UTF-8, missing headers, empty). Every file gets a record and a `manifest.json` entry.
@@ -138,7 +141,7 @@ Policy chunks (`policy_chunks.jsonl`, empty until the Resolution Guide arrives):
 `search_policy(query, effective_date=None)` and `search_emails(query, order_number=None)` return:
 
 ```json
-{"ok": true, "status": "found", "data": [{"text": "…masked snippet…", "score": 0.82, "citation": {"…": "…"}}], "sources": ["email:2026-01-01_000"], "error": null}
+{"ok": true, "status": "found", "data": [{"text": "…snippet (unmasked; C masks)…", "score": 0.82, "citation": {"…": "…"}}], "sources": ["email:2026-01-01_000"], "error": null}
 ```
 
 | `status` | Meaning for A's tools |
@@ -155,4 +158,6 @@ Policy chunks (`policy_chunks.jsonl`, empty until the Resolution Guide arrives):
 1. B: one `orders` key `(source_system, order_id)`. Does B want POD records keyed the same way? (proposed: yes)
 2. B: who owns COD truth when the card and `cod_amount` differ (T-A08)? Proposed: store both, the app shows both.
 3. C: is `locator` precise enough for the final-answer citation check?
-4. All: masking happens in A's tools before results reach C (proposed), or in C's output guardrail, or both?
+4. ~~All: where does masking happen?~~ **Decided 16 Nov (John): not in A. A returns everything unmasked; B/C/D
+   mask.** Still open for C: mask before the AI model sees the text, or only on the final answer? (PDPA question
+   likely at the demo.)

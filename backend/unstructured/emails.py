@@ -3,12 +3,15 @@
 One record per file in data/docs/complaint_emails/. No LLM calls (regex + templates), so no API spend.
 Record shape: docs/02-Design/contracts.md section 4. Traps referenced: docs/05-Reviews/trap_list.md.
 
-What it does NOT do: decide whether an order number is v1 or v2. That is B's candidate lookup (T-A01);
-this parser only passes on the number, the email date and any explicit V1/V2 prefix.
+What it does NOT do:
+- Hide personal data. Records are UNMASKED on purpose (team decision, John, 16 Nov): B/C/D mask before the AI
+  model or a customer sees anything. `pii_detected` counts what masking.mask_text would hide, to help them.
+- Decide whether an order number is v1 or v2. That is B's candidate lookup (T-A01); this parser only passes on
+  the number, the email date and any explicit V1/V2 prefix.
+Records live in output/ (git-ignored). Never commit them.
 """
 from __future__ import annotations
 
-import copy
 import hashlib
 import re
 from email.utils import parsedate_to_datetime
@@ -96,17 +99,9 @@ def extract_order_numbers(body: str) -> Tuple[List[str], List[str], Optional[str
     return numbers, locators, system_hint
 
 
-def sender_id(address: str) -> Optional[str]:
-    """Stable pseudonymous id, so repeat senders can be grouped without storing the address."""
-    m = re.search(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", address)
-    if not m:
-        return None
-    return "sender:" + hashlib.sha256(m.group(0).lower().encode("utf-8")).hexdigest()[:12]
-
-
 def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
     """Parse one email's text. Never raises on bad content: problems go into status/issues."""
-    text = text.lstrip("﻿").replace("\r\n", "\n").replace("\r", "\n")
+    text = text.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
     headers, body, body_offset, issues = _split_headers(text)
     record: Dict[str, Any] = {
         "source_id": source_id,
@@ -116,8 +111,9 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
         "status": "ok",
         "issues": issues,
         "received_at": None,
-        "sender_id": None,
-        "subject": None,
+        "sender": headers.get("From"),
+        "to": headers.get("To"),
+        "subject": headers.get("Subject"),
         "category": "unclassified",
         "is_complaint": None,
         "order_numbers": [],
@@ -127,9 +123,9 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
                    "status_claimed": None},
         "driver_codes": [],
         "corporate_account": None,
-        "pii_found": {},
-        "pii_masked_body": "",
-        "locators": {},
+        "pii_detected": mask_text(body)[1],
+        "body": body,
+        "locators": {"body_offset_in_file": body_offset},
     }
 
     missing = [h for h in REQUIRED_HEADERS if h not in headers]
@@ -141,7 +137,8 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
         record["status"] = "failed"
         return record
 
-    locators: Dict[str, Any] = {"received_at": "header:Date", "subject": "header:Subject"}
+    locators: Dict[str, Any] = {"received_at": "header:Date", "sender": "header:From", "subject": "header:Subject",
+                                "body_offset_in_file": body_offset}
     try:
         received = parsedate_to_datetime(headers["Date"])
         if received.tzinfo is None:
@@ -150,8 +147,6 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
     except (TypeError, ValueError, IndexError):
         issues.append(_issue("BAD_DATE", "Date header could not be parsed"))
 
-    record["sender_id"] = sender_id(headers["From"])
-    record["subject"] = mask_text(headers["Subject"])[0]
     category = classify(headers["Subject"], body)
     record["category"] = category
     record["is_complaint"] = None if category == "unclassified" else category != "compliment"
@@ -192,23 +187,10 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
     if len(numbers) > 1:
         issues.append(_issue("MULTIPLE_ORDER_NUMBERS", f"{len(numbers)} order numbers in one email"))
 
-    masked, counts = mask_text(body.strip())
-    record["pii_masked_body"], record["pii_found"] = masked, counts
-    locators["body_offset_in_file"] = body_offset
     record["locators"] = locators
     if issues:
         record["status"] = "partial"
     return record
-
-
-def public_view(record: Dict[str, Any]) -> Dict[str, Any]:
-    """What may leave A's tools (to C / the LLM): address claims masked. The local record keeps them so
-    code can compare the customer's claim with SQL (T-A07)."""
-    out = copy.deepcopy(record)
-    for key in ("stay_block", "pod_block"):
-        if out["claims"].get(key) is not None:
-            out["claims"][key] = "[MASKED]"
-    return out
 
 
 def parse_email_file(path: Path, data_dir: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:

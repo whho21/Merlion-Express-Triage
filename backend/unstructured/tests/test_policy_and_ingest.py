@@ -74,9 +74,10 @@ class IngestTests(unittest.TestCase):
         self.assertEqual(len(lines), 2)
         self.assertEqual([f["status"] for f in manifest["files"]], ["ok", "failed", "failed"])
         self.assertEqual(manifest["files"][2]["issues"][0]["code"], "SOURCE_MISSING")
-        self.assertEqual(manifest["summary"]["emails"]["pii_masked"], {"phone": 1})
-        self.assertNotIn("91234567", "\n".join(lines))
-        self.assertNotIn("a@example.com", "\n".join(lines))
+        self.assertEqual(manifest["summary"]["emails"]["pii_detected"], {"phone": 1})
+        self.assertIn("91234567", lines[0])  # unmasked on purpose (B/C/D mask)
+        self.assertEqual(json.loads(lines[0])["sender"], "a@example.com")
+        self.assertNotIn("91234567", json.dumps(manifest))  # manifest and summary carry counts only
 
     def test_missing_email_folder_returns_error(self):
         with tempfile.TemporaryDirectory() as tmp:

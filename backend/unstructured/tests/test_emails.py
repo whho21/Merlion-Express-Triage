@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from backend.unstructured.emails import parse_email_file, parse_email_text, public_view
+from backend.unstructured.emails import parse_email_file, parse_email_text
 
 
 def make_email(subject, body, sender="someone.test@example.com", date="Mon, 02 Mar 2026 13:14:00 +0800"):
@@ -15,10 +15,11 @@ def parse(subject, body, **kw):
 
 
 def located(record, text, locator):
-    """Return the body text a body:char:<a>-<b> locator points at."""
+    """Return the text a body:char:<a>-<b> locator points at, checking the file and record["body"] agree."""
     start, end = map(int, locator.split(":")[-1].split("-"))
-    body = text.split("\n\n", 1)[1]
-    return body[start:end]
+    in_file = text[record["locators"]["body_offset_in_file"]:][start:end]
+    assert in_file == record["body"][start:end]
+    return in_file
 
 
 class CategoryAndFieldTests(unittest.TestCase):
@@ -30,8 +31,8 @@ class CategoryAndFieldTests(unittest.TestCase):
         self.assertTrue(r["is_complaint"])
         self.assertEqual(r["order_numbers"], ["20001"])
         self.assertEqual((r["claims"]["stay_block"], r["claims"]["pod_block"]), ("111", "222"))
-        self.assertNotIn("111", r["pii_masked_body"])
-        self.assertNotIn("222", r["pii_masked_body"])
+        self.assertIn("blk 111", r["body"])  # unmasked on purpose: B/C/D mask (John, 16 Nov)
+        self.assertEqual(r["pii_detected"], {"block": 2})
 
     def test_order_locator_points_at_the_number(self):
         body = "I ordered 4 days ago and tracking still say IN_TRANSIT. Order number 20002. Call me at 91234567."
@@ -41,8 +42,8 @@ class CategoryAndFieldTests(unittest.TestCase):
         self.assertEqual(located(r, text, r["locators"]["order_numbers"][0]), "20002")
         self.assertEqual(r["claims"]["days_ago"], 4)
         self.assertEqual(r["claims"]["status_claimed"], "IN_TRANSIT")
-        self.assertEqual(r["pii_found"], {"phone": 1})
-        self.assertNotIn("91234567", r["pii_masked_body"])
+        self.assertEqual(r["pii_detected"], {"phone": 1})
+        self.assertIn("91234567", r["body"])
 
     def test_cod_amount(self):
         r = parse("COD amount wrong", "Driver collect $10 extra for COD, order 20003. Please refund.")
@@ -96,11 +97,11 @@ class OrderNumberTests(unittest.TestCase):
 
 
 class RobustnessTests(unittest.TestCase):
-    def test_sender_never_stored_but_grouped(self):
-        a = parse("Item missing from parcel", "Order 20014.", sender="Same.Person@Example.com")
-        b = parse("Item missing from parcel", "Order 20015.", sender="same.person@example.com")
-        self.assertEqual(a["sender_id"], b["sender_id"])
-        self.assertNotIn("example.com", str(a))
+    def test_headers_kept_as_written(self):
+        r = parse("Item missing from parcel", "Order 20014.", sender="Same.Person@Example.com")
+        self.assertEqual((r["sender"], r["to"], r["subject"]),
+                         ("Same.Person@Example.com", "support@example.com", "Item missing from parcel"))
+        self.assertEqual(r["locators"]["sender"], "header:From")
 
     def test_date_parsed_with_timezone(self):
         self.assertEqual(parse("Item missing from parcel", "Order 20016.")["received_at"], "2026-03-02T13:14:00+08:00")
@@ -110,10 +111,11 @@ class RobustnessTests(unittest.TestCase):
         self.assertEqual(r["status"], "partial")
         self.assertIn("BAD_DATE", [i["code"] for i in r["issues"]])
 
-    def test_missing_header_is_failed(self):
+    def test_missing_header_is_failed_but_keeps_the_text(self):
         r = parse_email_text("From: a@example.com\nSubject: x\n\nOrder 20018.\n", "email:test", "ref")
         self.assertEqual(r["status"], "failed")
         self.assertIn("MISSING_HEADER", [i["code"] for i in r["issues"]])
+        self.assertEqual((r["sender"], r["body"]), ("a@example.com", "Order 20018.\n"))
 
     def test_crlf_and_bom(self):
         text = "﻿" + make_email("Item missing from parcel", "Order 20019.").replace("\n", "\r\n")
@@ -131,12 +133,12 @@ class RobustnessTests(unittest.TestCase):
         self.assertEqual(entry["ref"], "data/docs/complaint_emails/2026-01-01_000.txt")
         self.assertEqual(record["source_id"], "email:2026-01-01_000")
 
-    def test_public_view_masks_block_claims_only(self):
-        r = parse("Wrong address delivered", "I stay blk 111 but the POD photo shows blk 222. Order 20020.")
-        pub = public_view(r)
-        self.assertEqual((pub["claims"]["stay_block"], pub["claims"]["pod_block"]), ("[MASKED]", "[MASKED]"))
-        self.assertEqual(r["claims"]["stay_block"], "111")  # local record untouched
-        self.assertEqual(pub["order_numbers"], ["20020"])
+    def test_nothing_is_masked_in_the_record(self):
+        body = "I stay blk 111 but the POD photo shows blk 222. Order 20020. Call 91234567 or a.b@example.com."
+        r = parse("Wrong address delivered", body)
+        for placeholder in ("[PHONE]", "[EMAIL]", "[BLOCK]", "[MASKED]"):
+            self.assertNotIn(placeholder, str(r))
+        self.assertEqual(r["pii_detected"], {"email": 1, "phone": 1, "block": 2})
 
 
 if __name__ == "__main__":

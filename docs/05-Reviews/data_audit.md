@@ -85,8 +85,9 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
 ### A6. What A will build from this (input to Stage 2)
 
 - Emails: parse headers + body by code; classify by subject template; extract order number, driver code, corporate
-  account, claimed amounts/blocks/days. **Mask phone numbers and sender addresses before any LLM call.**
-  **Done 16 Nov** (`backend/unstructured/`, 90/90 parsed ok; see `docs/03-Handoffs/Ralph_2026-11-16-email-parser.md`).
+  account, claimed amounts/blocks/days. **Done 16 Nov** (`backend/unstructured/`, 90/90 parsed ok; see
+  `docs/03-Handoffs/Ralph_2026-11-16-email-parser.md`). Output is unmasked; **masking is B/C/D's job** (John,
+  16 Nov) — phone numbers and sender addresses must be hidden before any LLM call or customer reply.
 - POD: extract fields with the class vision endpoint, validate against SQL (all 80 should match). Record uncertainty
   and keep the image path as the citation.
 - Rate card: extract once into a versioned table (`effective_from` 2026-04-01), with explicit band-boundary rules
