@@ -29,7 +29,7 @@ docs/
 | [Developer B task list](01-Plans_Status/Developer-B_tasklist.md) | `01-Plans_Status/` | Track Developer B's tasks. |
 | [Developer C task list](01-Plans_Status/Developer-C_tasklist.md) | `01-Plans_Status/` | Track Developer C's tasks. |
 | [Developer D task list](01-Plans_Status/Developer-D_tasklist.md) | `01-Plans_Status/` | Track Developer D's tasks. |
-| [Developer E task list](01-Plans_Status/Developer-E_tasklist.md) | `01-Plans_Status/` | Track Ho Wai Hong's setup, eval and integration tasks. |
+| [Developer E task list](01-Plans_Status/Developer-E_tasklist.md) | `01-Plans_Status/` | Track Developer E's taskstasks. |
 | [Name-A task list](Archive/Name-A_tasklist.md) | `Archive/` | Task list format and status legend. |
 | [Delivery RID log](01-Plans_Status/delivery_RID.md) | `01-Plans_Status/` | Track risks, issues and decisions. |
 | [Team work guide](01-Plans_Status/TEAM_WORK_GUIDE.md) | `01-Plans_Status/` | Daily Git, PR review, handoff and checkpoint workflow. |
