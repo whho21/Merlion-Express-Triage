@@ -21,7 +21,7 @@ pip install -r backend/unstructured/requirements.txt          # optional: faiss-
 python -m backend.unstructured.build_index                    # vector index (SQLite + FAISS); local embeddings, free
 python -m backend.unstructured.evals                          # A's 21 eval cases: PASS / FAIL / PENDING
 python -m backend.unstructured.ask                            # type a question, see the rule + emails and the search method
-python -m unittest discover -s backend/unstructured/tests -t .   # 106 unit tests, synthetic data, no network
+python -m unittest discover -s backend/unstructured/tests -t .   # 122 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
@@ -51,7 +51,7 @@ record is `docs/04-Testing_Evals/api_spend.md`. First full run (16 Nov): 81 imag
 | `local_embed.py` | Free, offline embeddings with numpy: TF-IDF over words + character n-grams (typo-tolerant, no synonyms). |
 | `ask.py` | Try the search by hand (`python -m backend.unstructured.ask`). |
 | `evals.py` | Runs `evals/developer_a_cases.json`. |
-| `masking.py` | Shared helper for B/C/D. `mask_text`: emails, NRIC, phones, unit numbers, postal codes, block numbers. `privacy_guard`: all of that plus street addresses and personal names; use it on any text sent to an AI endpoint. |
+| `masking.py` | Shared helper for B/C/D. `mask_text`: emails, NRIC, phones, unit numbers, postal codes, block numbers. `privacy_guard`: all of that plus street addresses and personal names (Title Case, CAPS or lower case); use it on any text sent to an AI endpoint. |
 
 Record shapes, envelopes and telemetry: `docs/02-Design/contracts.md` sections 2–6. Traps: `docs/05-Reviews/trap_list.md`.
 Limits and evidence for B/C/D: `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md`.

@@ -47,7 +47,8 @@ except ImportError:  # pragma: no cover - exercised by patching HAVE_FAISS in te
     np = None
     HAVE_FAISS = False
 
-INDEX_VERSION = "a-vec-2"  # a-vec-2: privacy_guard on embedded text, file checksums (PR #13 review)
+INDEX_VERSION = "a-vec-3"  # a-vec-2: privacy_guard on embedded text, file checksums (PR #13 review);
+# a-vec-3: guard also catches CAPS / lower-case names and numbered addresses, so the embedded text changed (PR #14 review)
 DB_NAME = "a_index.sqlite"
 FAISS_NAME = "a_index.faiss"
 LOCAL_EMBED_NAME = "local_embed.npz"
@@ -272,6 +273,15 @@ class VectorIndex:
         if self.meta.get("index_version") != INDEX_VERSION:
             raise VectorUnavailable("INDEX_STALE", f"index format {self.meta.get('index_version')!r}, this code reads "
                                                    f"{INDEX_VERSION!r}; rerun build_index")
+        try:  # every value search() relies on is checked here, so a damaged meta row cannot crash a query later
+            self.min_similarity = float(self.meta.get("min_similarity", MIN_SIMILARITY))
+            dim = int(self.meta.get("dim", 0))
+        except (TypeError, ValueError) as exc:
+            raise VectorUnavailable("INDEX_CORRUPT", f"index metadata unreadable ({exc}); rerun build_index") from exc
+        if not (0.0 <= self.min_similarity <= 1.0) or dim <= 0:
+            raise VectorUnavailable("INDEX_CORRUPT", f"index metadata out of range (min_similarity="
+                                                     f"{self.meta.get('min_similarity')!r}, dim={self.meta.get('dim')!r}); "
+                                                     "rerun build_index")
         try:
             raw = (folder / FAISS_NAME).read_bytes()
         except OSError as exc:
@@ -291,7 +301,7 @@ class VectorIndex:
     def search(self, query: str, embedder: Embedder, *, kind: Optional[str] = None,
                min_similarity: Optional[float] = None) -> List[Tuple[float, Dict[str, Any]]]:
         if min_similarity is None:
-            min_similarity = float(self.meta.get("min_similarity", MIN_SIMILARITY))
+            min_similarity = self.min_similarity
         masked = privacy_guard(query)[0]  # same guard as the indexed text; names/addresses never reach the embedder
         if masked not in self._query_cache:
             vectors, _ = embedder([masked])
