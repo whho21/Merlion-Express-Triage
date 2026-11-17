@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from backend.unstructured import ingest, policy
+from backend.unstructured.tests.fixtures import GUIDE_ROWS, make_xlsx
 
 
 class PolicyTests(unittest.TestCase):
@@ -45,15 +46,41 @@ class PolicyTests(unittest.TestCase):
         self.assertEqual(chunks[1]["text"], "case_type: damaged; action: compensate")
 
     def test_unsupported_format_is_visible(self):
-        self.write("tabular/Resolution_Guide.xlsx", b"PK\x03\x04")
+        self.write("tabular/Resolution_Guide.pdf", b"%PDF-1.4")
         chunks, entries = policy.ingest_policy(self.data)
         self.assertEqual(chunks, [])
         self.assertEqual(entries[0]["issues"][0]["code"], "UNSUPPORTED_FORMAT")
 
+    def test_broken_xlsx_is_visible_not_a_crash(self):
+        self.write("tabular/Resolution_Guide.xlsx", b"PK\x03\x04 not really a zip")
+        chunks, entries = policy.ingest_policy(self.data)
+        self.assertEqual((chunks, entries[0]["status"], entries[0]["issues"][0]["code"]), ([], "failed", "BAD_XLSX"))
+
     def test_case_log_is_not_mistaken_for_the_guide(self):
         self.write("tabular/cs_case_log.csv", "case_id,order\n1,20001\n")
+        make_xlsx(self.data / "tabular" / "cs_case_log.xlsx", {"Case Log": [["Case No", "Order Ref"], ["1", "20001"]]})
         _, entries = policy.ingest_policy(self.data)
         self.assertEqual(entries[0]["issues"][0]["code"], "SOURCE_MISSING")
+
+    def test_guide_tab_inside_the_case_log_workbook(self):
+        # the client's real layout: one workbook, "Case Log" (B's) + "Resolution Guide" (A's)
+        make_xlsx(self.data / "tabular" / "cs_case_log.xlsx",
+                  {"Case Log": [["Case No", "Customer"], ["1", "Test Person"]], "Resolution Guide": GUIDE_ROWS})
+        chunks, entries = policy.ingest_policy(self.data)
+        e = entries[0]
+        self.assertEqual((e["status"], e["source_id"], e["tabs_skipped"]),
+                         ("ok", "policy:cs_case_log:resolution_guide", ["Case Log"]))
+        self.assertEqual((e["guide"][0]["version"], e["guide"][0]["updated"]), ("v2", "2026-03-02"))
+        self.assertEqual([c["heading"] for c in chunks],
+                         ["Late delivery", "COD overcharge", "Corporate account (TEST-*)", "Notes"])
+        late = chunks[0]
+        self.assertEqual(late["locator"], "sheet:Resolution Guide|row:5")
+        self.assertEqual(late["email_categories"], ["late"])
+        self.assertEqual(late["fields"]["Resolution"], "Under 2 days: apology only")
+        self.assertIn("Q02", late["authority"])
+        self.assertEqual(chunks[2]["email_categories"], ["corporate"])
+        self.assertEqual(chunks[3]["text"], "One complaint = one case.")
+        self.assertNotIn("Test Person", json.dumps(chunks))  # the case-log tab is never read by A
 
 
 class IngestTests(unittest.TestCase):

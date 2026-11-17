@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from . import emails, policy
+from .paths import default_data_dir
 
 EMAIL_SUBDIR = Path("docs") / "complaint_emails"
 
@@ -76,10 +77,12 @@ def run(data_dir: Path, out_dir: Path) -> Dict[str, Any]:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Ingest complaint emails and the policy/guide (Developer A).")
-    parser.add_argument("--data", type=Path, default=Path("data"), help="unzipped package folder (default: data)")
+    parser.add_argument("--data", type=Path, default=None,
+                        help="package folder (default: data/team2_merlion_express_package if present, else data)")
     parser.add_argument("--out", type=Path, default=Path("output") / "unstructured",
                         help="output folder, git-ignored (default: output/unstructured)")
     args = parser.parse_args(argv)
+    args.data = args.data or default_data_dir()
     try:
         manifest = run(args.data, args.out)
     except FileNotFoundError as exc:

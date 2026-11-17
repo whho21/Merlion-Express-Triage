@@ -125,8 +125,8 @@ Built by the same command → `output/unstructured/rate_cards.jsonl`. Synthetic 
   "image_sha256": "…",
   "effective_from": "2026-04-01", "effective_to": null, "supersedes_previous": true,
   "currency": "SGD",
-  "bands": [{"band": "<=3kg", "min_kg": 0.0, "max_kg": 3.0, "boundary_rule": "UNRESOLVED (client A-Q4)"}],
-  "rows": [{"zone": "Central", "band": "<=3kg", "min_kg": 0.0, "max_kg": 3.0, "boundary_rule": "UNRESOLVED (client A-Q4)",
+  "bands": [{"band": "<=3kg", "min_kg": 0.0, "max_kg": 3.0, "boundary_rule": "upper limit inclusive: min < weight <= max (client Q07)"}],
+  "rows": [{"zone": "Central", "band": "<=3kg", "min_kg": 0.0, "max_kg": 3.0, "boundary_rule": "upper limit inclusive: min < weight <= max (client Q07)",
             "price": 0.00, "locator": "row:Central/col:<=3kg"}],
   "surcharges": [{"name": "same_day", "zone": "Central", "amount": 0.00, "available": true, "raw": "+$0.00"},
                  {"name": "CBD ERP hours (0730-1900)", "band": "<=3kg", "amount": 0.00}],
@@ -137,11 +137,19 @@ Built by the same command → `output/unstructured/rate_cards.jsonl`. Synthetic 
 }
 ```
 
-`ratecard.lookup_rate(cards, zone=, weight_kg=, on_date=)` (for B's `get_rate`) returns the tool envelope:
-- `not_found` for a date before the earliest `effective_from`, with the reason. Never falls back to the April card (T-A15).
-- `ambiguous` when the weight sits on a shared band edge (3 kg, 10 kg); `data` holds both candidates (T-A16).
-- `found` with `{price, band, citation}`; the citation locator is `row:<zone>/col:<band>`.
-- Zone and service type are inputs: the orders table has neither (client question A-Q4).
+`ratecard.lookup_rate(cards, zone=, weight_kg=, on_date=)` (for B's `get_rate`) returns the tool envelope.
+**Updated 17 Nov for the client's answers** (the record keeps what the image prints; rules apply at lookup):
+- **Q06:** a date before 2026-04-01 is priced from the April card with `applied_retrospectively: true` and the note
+  "rate card applied retrospectively, per client (Q06…)". Only cards listed in `RETROSPECTIVE_AUTHORITY` are
+  back-dated; a future card is not, so it returns `not_found` (T-A15).
+- **Q07:** upper limit inclusive: `0 < w <= 3`, `3 < w <= 10`, `10 < w <= 25`. Exactly 3 kg → `<=3kg`, 10 kg →
+  `3-10kg`, 25 kg → `10-25kg`. Over 25 kg or ≤ 0 → `not_found` with the reason (quoted by hand) (T-A16).
+- **Q08:** every order is standard delivery (note on every result). CBD-ERP surcharge (CBD postal district and
+  07:30–19:00) and public holidays (SG calendar) are not applied here — whoever builds the quote adds them.
+- **Q03:** `zone` may be a price row ("East / North-East") or an ops zone ("North-East", "East", "North", "West",
+  "Central", "Sentosa", "Jurong Island"); the ops zone comes from the town in the delivery address (B).
+- `found` → `data: {price, currency, gst_included: false, band, price_zone, zone_input, boundary_rule,
+  applied_retrospectively, notes, citation}`; the citation locator is `row:<zone>/col:<band>`.
 
 ### 4. Email record (A produces → C consumes via `search_emails`)
 
@@ -188,13 +196,30 @@ Rules:
 - `status`: `ok` · `partial` (no order number in a complaint, unknown category, bad date, several numbers) ·
   `failed` (not UTF-8, missing headers, empty). Every file gets a record and a `manifest.json` entry.
 
-Policy chunks (`policy_chunks.jsonl`, empty until the Resolution Guide arrives):
-`{"source_id": "policy:<stem>", "type": "document", "ref": "data/tabular/<file>", "locator": "section:<heading>|line:<a>-<b>" or "row:<n>", "heading": "…", "text": "…"}`.
-`.md`/`.txt`/`.csv` are parsed; other formats get a visible `UNSUPPORTED_FORMAT` outcome.
+Policy chunks (`policy_chunks.jsonl`). **Guide received 16 Nov** as the "Resolution Guide" tab of
+`CS_case_log_Oct25-Jun26.xlsx` (client Q01/Q02; copy it into `<package>/tabular/`, git-ignored). One chunk per rule row
+(9) and per note (3). Synthetic sample:
+
+```json
+{"source_id": "policy:CS_case_log_Oct25-Jun26:resolution_guide", "type": "document",
+ "ref": "data/tabular/CS_case_log_Oct25-Jun26.xlsx", "locator": "sheet:Resolution Guide|row:5",
+ "heading": "Late delivery", "text": "Complaint type: Late delivery. Check first: …. Resolution: …. Limit / approval: …",
+ "fields": {"Complaint type": "…", "Check first": "…", "Resolution": "…", "Limit / approval": "…"},
+ "email_categories": ["late"], "guide_version": "v2", "guide_updated": "2026-03-02",
+ "authority": "Client Q02 (16 Nov 2026): one guide version in use; apply it to every case whatever the complaint date"}
+```
+
+Email category → guide rule: `late` → Late delivery · `where_is_parcel` → Parcel not received · `thrown_over_gate`
+→ Damaged / thrown parcel · `wrong_address` → Wrong address · `cod_wrong` → COD overcharge · `missing_item` → Item
+missing · `corporate` (any MERL-C-* account) → Corporate account. `compliment` has no rule. The "Case Log" tab is
+B's and is not read by A. `.xlsx` (guide tab), `.md`/`.txt`/`.csv` are parsed; other formats → `UNSUPPORTED_FORMAT`.
 
 ### 5. A's tool results (common envelope from the team plan)
 
-`search_policy(query, effective_date=None)` and `search_emails(query, order_number=None)` return:
+`search_policy(query="", effective_date=None, *, category=None)` and `search_emails(query, order_number=None)`
+return the envelope below. `category` (added 17 Nov, optional) returns that complaint type's guide row directly;
+`effective_date` does not filter because the client applies guide v2 to every case (Q02) — each hit carries
+`authority`, `guide_version` and `fields`.
 
 ```json
 {"ok": true, "status": "found", "data": [{"text": "…snippet (unmasked; C masks)…", "score": 0.82, "citation": {"…": "…"}}], "sources": ["email:2026-01-01_000"], "error": null}
@@ -207,12 +232,15 @@ Policy chunks (`policy_chunks.jsonl`, empty until the Resolution Guide arrives):
 | `partial` | results returned, but some sources failed or are low-confidence |
 | `failed` | the dependency failed (index missing, endpoint down). `error: {code, message, retryable}` |
 
-`search_policy` returns `failed` with `error.code = "SOURCE_MISSING"` until the Resolution Guide arrives (T-A18).
+`search_policy` returns `failed` with `error.code = "SOURCE_MISSING"` only if the guide workbook is not in
+`<package>/tabular/` (T-A18); a category with no rule (e.g. `compliment`) returns `not_found` — never an invented rule.
 `INDEX_MISSING` means the ingest has not been run. `ok` is `false` only for `failed`.
 
 Code: `backend/unstructured/search.py`. Keyword ranking, no embeddings (no spend). Each `search_emails` hit:
 `{text, score, category, is_complaint, received_at, order_numbers, citation}` where `citation.locator` =
-`body:char:<a>-<b>` and `body[a:b] == text` exactly. Each `search_policy` hit: `{text, score, heading, citation}`.
+`body:char:<a>-<b>` and `body[a:b] == text` exactly. Each `search_policy` hit: `{text, score, heading, fields,
+guide_version, authority, citation}`. Why keyword search and not embeddings, with measurements:
+`docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`.
 
 ### 6. A's telemetry lines (draft until C's shared telemetry contract)
 

@@ -7,15 +7,18 @@ tools for B and C. Standard library only (any Python 3.9+), so nothing to instal
 model or a customer sees it. `masking.py` is a ready helper they can reuse. Outputs live in `output/unstructured/`
 (git-ignored — they hold real personal data; never commit or copy them elsewhere).
 
-## Run (from the repo root, after unzipping the package into `data/`)
+## Run (from the repo root)
+
+Package folder: `data/team2_merlion_express_package/` (plan v0.5) or `data/` — whichever exists; `--data` overrides.
+Copy the client's `CS_case_log_Oct25-Jun26.xlsx` (Q01 reply, 16 Nov) into its `tabular/` folder for the guide.
 
 ```bash
 python -m backend.unstructured.ingest                         # emails + policy -> emails.jsonl, policy_chunks.jsonl, manifest.json (free)
 python -m backend.unstructured.extract_images --dry-run       # free: how many images would be sent to the model
 python -m backend.unstructured.extract_images --limit 2       # paid smoke test (2 POD cards + the rate card)
 python -m backend.unstructured.extract_images                 # paid: every image not already cached
-python -m backend.unstructured.evals                          # A's 12 eval cases: PASS / FAIL / PENDING
-python -m unittest discover -s backend/unstructured/tests -t .   # 63 unit tests, synthetic data, no network
+python -m backend.unstructured.evals                          # A's 18 eval cases: PASS / FAIL / PENDING
+python -m unittest discover -s backend/unstructured/tests -t .   # 70 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
@@ -29,15 +32,17 @@ record is `docs/04-Testing_Evals/api_spend.md`. First full run (16 Nov): 81 imag
 | File | What it does |
 |---|---|
 | `emails.py` | Keeps sender, recipient, subject and body as written; 7 categories (+ `unclassified`); order numbers, driver codes, corporate account and customer claims, each with a `body:char:<a>-<b>` locator. |
-| `policy.py` | Finds the guide under `data/tabular/` or `data/docs/`; `.md`/`.txt` by heading, `.csv` by row. Today: `SOURCE_MISSING` (client question A-Q1). |
+| `policy.py` | Reads the "Resolution Guide" tab of the client's workbook (v2, 9 rules + 3 notes), one chunk per row cited `sheet:…|row:<n>`, tagged with the email categories it covers. Also `.md`/`.txt`/`.csv`. No guide → `SOURCE_MISSING`. |
+| `xlsx.py` | Standard-library `.xlsx` cell reader (no new dependency). |
+| `paths.py` | Finds the package folder and writes repo-relative source refs. |
 | `ingest.py` | Runs both; writes outputs + a per-file manifest; prints counts only. |
 | `llm.py` | Calls the class vision endpoint: JSON answers, 3 bounded retries, one telemetry line per call (no content). |
 | `cache.py` | Caches each answer by image hash + prompt version + model, so reruns cost nothing (task 6). |
 | `sqlref.py` | Read-only reference from the SQL dump to validate POD cards (B still owns the database). |
 | `pod.py` | POD prompt, normalisation (day-first dates, look-alike fixes, receiver kind), confidence, SQL validation, flags, `find_pod`. |
-| `ratecard.py` | Rate-card prompt and parsing (bands, prices, surcharges, notes) and `lookup_rate` (not_found before the card's date, ambiguous on band edges). |
+| `ratecard.py` | Rate-card prompt and parsing (bands, prices, surcharges, notes) and `lookup_rate` with the client's rules: April card applied retrospectively (Q06), upper limit inclusive (Q07), standard only (Q08), ops zone → price row (Q03). |
 | `extract_images.py` | Runs POD + rate-card extraction with cache, manifest, telemetry and SQL validation. |
-| `search.py` | `search_emails(query, order_number=None)` and `search_policy(query, effective_date=None)` for C, with exact citations. |
+| `search.py` | `search_emails(query, order_number=None)` and `search_policy(query="", effective_date=None, *, category=None)` for C, with exact citations. Keyword ranking + a small query-side synonym list; why not embeddings: `docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`. |
 | `evals.py` | Runs `evals/developer_a_cases.json`. |
 | `masking.py` | Shared helper for B/C/D: masks emails, NRIC, phones, unit numbers, postal codes, block numbers (not names). |
 
