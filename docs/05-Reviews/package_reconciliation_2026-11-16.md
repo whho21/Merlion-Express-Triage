@@ -10,14 +10,16 @@
 | 80 POD scans | 80 JPEGs under `images/proof_of_delivery/`, all v1-labelled | Count matches; A verifies contents and expected coverage, Q05 |
 | Rate-card images | `images/rate_cards/rate_card_apr2026.jpg` only | Present but historical coverage unresolved; A/B, Q03/Q04 |
 | 90 complaint emails | 90 non-empty readable text files | Count matches; A verifies identities/content |
-| CS case log in `tabular/` | Directory empty | Missing locally; B, Q01 drafted and unsent |
-| CS Resolution Guide | No guide found in package files | Missing locally; A/B, Q02 drafted and unsent |
+| CS case log in `tabular/` | Directory empty | **Received 16 Nov 8:00 PM** with the client's Q01 reply: `CS_case_log_Oct25-Jun26.xlsx`, tab "Case Log" (505 rows; names and phone numbers — keep in `tabular/`, git-ignored). B |
+| CS Resolution Guide | No guide found in package files | **Received 16 Nov** as tab "Resolution Guide" of the same workbook (v2, 2 Mar 2026; 9 rules + 3 notes; Q02). A parses it (`search_policy`) |
 | Supporting briefing / brief | PDF (2 pages), `CLIENT_BRIEF.md` | Present; preserve originals |
 
 Ralph reports that `tabular/` is absent from the archive (see below); the local package has an empty directory. E and B should independently reconcile the archive and check for separately supplied attachments before reporting a supplier omission. Raise unresolved gaps promptly; do not silently substitute other sources.
 
 - [ ] Original archive / separate attachments checked.
-- [ ] John sends reviewed client questions and records date sent.
+- [x] John sends reviewed client questions and records date sent — sent 16 Nov 6:42 PM; client replied Q01–Q08
+      16 Nov 8:00 PM. Ralph's A-Q1..A-Q4 are covered by Q01–Q08. A-Q5 (email → order link) is answered by the data:
+      73 of 79 complaint senders appear in the case log "Contact" column with an "Order Ref" (for B).
 - [ ] Responses and any new files reconciled; audit updated.
 - [ ] All five developers verify equivalent local package and database counts.
 

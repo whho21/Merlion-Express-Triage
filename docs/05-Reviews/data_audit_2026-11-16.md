@@ -161,8 +161,11 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
   and keep the image path as the citation.
 - Rate card: extract once into a versioned table (`effective_from` 2026-04-01), with explicit band-boundary rules
   once the client answers.
-- Policy search: **blocked** until the Resolution Guide arrives.
+- Policy search: ~~blocked until the Resolution Guide arrives~~ — **guide received 16 Nov** (client Q01/Q02) and
+  parsed 17 Nov: 9 rules + 3 notes, each cited `sheet:Resolution Guide|row:<n>`.
 - **Status 16 Nov:** POD + rate-card extraction, cache, SQL validation, `search_emails` / `search_policy` and 12
   eval cases are built (`backend/unstructured/`). **Image run done with the team key: 80/80 POD cards match SQL on
   every key field; rate card 12/12 prices; 12/12 evals pass; cost about US$0.32.** See
   `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md` and `docs/04-Testing_Evals/api_spend.md`.
+- **Status 17 Nov:** client answers applied (guide, Q03/Q04/Q06/Q07/Q08); 18/18 A evals pass; no new spend. See
+  `docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`.

@@ -23,11 +23,18 @@ TOKEN_RE = re.compile(r"[a-z0-9_]+")
 STOPWORDS = set("a an and are as at be but by for from has have i in is it its me my not of on or our so the "
                 "this to was we with you your".split())
 SNIPPET_CHARS = 240
+# Everyday words -> the wording the guide/emails use. Query side only, so source text and citations never change.
+# Added from measured misses on 17 Nov ("wrong block" vs "Wrong address", "cash on delivery" vs "COD").
+QUERY_SYNONYMS = {
+    "cash": "cod", "blk": "address", "block": "address", "unit": "address", "threw": "thrown", "throw": "thrown",
+    "broke": "damaged", "broken": "damaged", "never": "received", "overcharged": "overcharge", "extra": "overcharge",
+    "charged": "chargeable", "attempt": "attempts", "holiday": "ph", "corporate": "merl",
+}
 
 
 def _envelope(status: str, data: Any = None, sources: Optional[List[str]] = None,
-              error: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    return {"ok": status != "failed", "status": status, "data": data, "sources": sources or [], "error": error}
+              error: Optional[Dict[str, Any]] = None, **extra: Any) -> Dict[str, Any]:
+    return {"ok": status != "failed", "status": status, "data": data, "sources": sources or [], "error": error, **extra}
 
 
 def _tokens(text: str) -> List[str]:
@@ -46,6 +53,7 @@ def _rank(query: str, docs: List[Dict[str, Any]], text_of) -> List[tuple]:
     q = _tokens(query)
     if not q:
         return []
+    q += [QUERY_SYNONYMS[t] for t in q if t in QUERY_SYNONYMS and QUERY_SYNONYMS[t] not in q]
     doc_tokens = [Counter(_tokens(text_of(d))) for d in docs]
     n = len(docs)
     idf = {t: math.log(1 + n / (1 + sum(1 for c in doc_tokens if t in c))) for t in set(q)}
@@ -110,18 +118,24 @@ def _search_emails(query: str, order_number: Optional[str], top_k: int, out_dir:
     return _envelope("found", data=hits, sources=[h["citation"]["source_id"] for h in hits])
 
 
-def search_policy(query: str, effective_date: Optional[str] = None, *, top_k: int = 5,
-                  out_dir: Path = DEFAULT_OUT) -> Dict[str, Any]:
-    """effective_date is accepted for the agreed signature; it filters once the guide carries validity dates."""
+def search_policy(query: str = "", effective_date: Optional[str] = None, *, category: Optional[str] = None,
+                  top_k: int = 5, out_dir: Path = DEFAULT_OUT) -> Dict[str, Any]:
+    """Cited Resolution Guide rules.
+
+    category: an email category from emails.py (late, wrong_address, cod_wrong, missing_item, thrown_over_gate,
+    where_is_parcel) or "corporate" for MERL-C-* accounts; returns that complaint type's rule row directly.
+    effective_date is accepted for the agreed signature but does not filter: the client says the one guide version
+    (v2, 2 Mar 2026) applies to every case whatever its date (Q02). Each hit carries that authority.
+    """
     started = time.monotonic()
-    result = _search_policy(query, top_k, out_dir)
+    result = _search_policy(query, category, top_k, out_dir)
     log_telemetry(out_dir / "telemetry.jsonl", tool="search_policy", status=result["status"],
                   hits=len(result["data"] or []), latency_ms=int((time.monotonic() - started) * 1000),
-                  error=(result["error"] or {}).get("code"))
+                  by_category=category is not None, error=(result["error"] or {}).get("code"))
     return result
 
 
-def _search_policy(query: str, top_k: int, out_dir: Path) -> Dict[str, Any]:
+def _search_policy(query: str, category: Optional[str], top_k: int, out_dir: Path) -> Dict[str, Any]:
     manifest_path = out_dir / "manifest.json"
     chunks = _load_jsonl(out_dir / "policy_chunks.jsonl")
     if chunks is None or not manifest_path.is_file():
@@ -133,10 +147,19 @@ def _search_policy(query: str, top_k: int, out_dir: Path) -> Dict[str, Any]:
         code = "SOURCE_MISSING" if "SOURCE_MISSING" in codes else (codes[0] if codes else "EMPTY_SOURCE")
         return _envelope("failed", data=[], error={
             "code": code, "retryable": False,
-            "message": "Resolution Guide not available, so no policy-based recommendation can be made "
-                       "(client question A-Q1). Do not invent a policy."})
-    ranked = _rank(query, chunks, lambda c: f"{c.get('heading') or ''} {c.get('text') or ''}")
+            "message": "Resolution Guide not available here, so no policy-based recommendation can be made. "
+                       "Do not invent a policy. (The client sent it with Q01; copy the workbook into tabular/.)"})
+    pool = chunks
+    if category is not None:
+        pool = [c for c in chunks if category in (c.get("email_categories") or [])]
+        if not pool:
+            return _envelope("not_found", data=[], reason=f"the Resolution Guide has no rule for category {category!r}")
+    if query.strip():
+        ranked = _rank(query, pool, lambda c: f"{c.get('heading') or ''} {c.get('text') or ''}")
+    else:
+        ranked = [(1.0, c, 0) for c in pool]
     hits = [{"text": c["text"][:SNIPPET_CHARS * 2], "score": score, "heading": c.get("heading"),
+             "fields": c.get("fields"), "guide_version": c.get("guide_version"), "authority": c.get("authority"),
              "citation": {"source_id": c["source_id"], "type": "document", "ref": c["ref"], "locator": c["locator"],
                           "record_key": None}} for score, c, _ in ranked[:top_k]]
     if not hits:

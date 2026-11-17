@@ -109,7 +109,10 @@ class PodTests(unittest.TestCase):
     def test_find_pod_never_reuses_v1_card_for_v2(self):
         records = [pod_record(GOOD_POD, reference())]
         self.assertEqual(pod.find_pod(records, "v1", 20001)["status"], "found")
-        self.assertEqual(pod.find_pod(records, "v2", 20001)["status"], "not_found")
+        v2 = pod.find_pod(records, "v2", 20001)
+        self.assertEqual(v2["status"], "not_found")
+        self.assertIn("No POD on file", v2["reason"])  # client Q04 wording: say it, never imply a check
+        self.assertIn("Q04", v2["reason"])
 
 
 class RateCardTests(unittest.TestCase):
@@ -122,7 +125,7 @@ class RateCardTests(unittest.TestCase):
         self.assertEqual((c["effective_from"], c["supersedes_previous"], c["status"]), ("2026-04-01", True, "ok"))
         self.assertEqual(len(c["rows"]), 6)  # 2 zones x 3 bands; the "+$" row is a surcharge
         self.assertEqual(c["rows"][0], {"zone": "Central", "band": "<=3kg", "min_kg": 0.0, "max_kg": 3.0,
-                                        "boundary_rule": "UNRESOLVED (client A-Q4)", "price": 1.0,
+                                        "boundary_rule": ratecard.BOUNDARY_RULE, "price": 1.0,
                                         "locator": "row:Central/col:<=3kg"})
         same_day = {s["zone"]: s for s in c["surcharges"] if s["name"] == "same_day"}
         self.assertEqual((same_day["Central"]["amount"], same_day["Island"]["available"]), (4.0, False))
@@ -132,16 +135,41 @@ class RateCardTests(unittest.TestCase):
                          ({"pct": 1.5, "min": 2.0}, {"amount": 3.0, "from_attempt": 3}, False, 9.0))
         self.assertEqual(n["corporate_rebate"], {"pct": 5.0, "above_parcels_per_month": 2000})
 
-    def test_lookup_found_ambiguous_and_before_card(self):
+    def test_lookup_found_with_citation(self):
+        hit = ratecard.lookup_rate([self.card()], zone="central", weight_kg=5, on_date="2026-05-01")
+        d = hit["data"]
+        self.assertEqual((hit["status"], d["price"], d["citation"]["locator"], d["applied_retrospectively"]),
+                         ("found", 2.0, "row:Central/col:3-10kg", False))
+        self.assertIn("standard", d["notes"][0])  # client Q08
+
+    def test_exact_band_edges_go_to_the_lower_band(self):  # client Q07: upper limit inclusive
         cards = [self.card()]
-        hit = ratecard.lookup_rate(cards, zone="central", weight_kg=5, on_date="2026-05-01")
-        self.assertEqual((hit["status"], hit["data"]["price"], hit["data"]["citation"]["locator"]),
-                         ("found", 2.0, "row:Central/col:3-10kg"))
-        edge = ratecard.lookup_rate(cards, zone="Central", weight_kg=10.0, on_date="2026-05-01")
-        self.assertEqual((edge["status"], len(edge["data"])), ("ambiguous", 2))
-        early = ratecard.lookup_rate(cards, zone="Central", weight_kg=5, on_date="2026-01-15")
-        self.assertEqual(early["status"], "not_found")
-        self.assertIn("A-Q2", early["reason"])
+        band = lambda w: ratecard.lookup_rate(cards, zone="Central", weight_kg=w, on_date="2026-05-01")  # noqa: E731
+        self.assertEqual([band(w)["data"]["band"] for w in (3.0, 3.01, 10.0, 10.01, 25.0)],
+                         ["<=3kg", "3-10kg", "3-10kg", "10-25kg", "10-25kg"])
+        self.assertEqual(band(25.5)["status"], "not_found")
+        self.assertIn("Q07", band(25.5)["reason"])
+        self.assertEqual(band(0)["status"], "not_found")
+
+    def test_april_card_applies_retrospectively_with_authority(self):  # client Q06
+        early = ratecard.lookup_rate([self.card()], zone="Central", weight_kg=5, on_date="2025-10-15")
+        self.assertEqual((early["status"], early["data"]["applied_retrospectively"]), ("found", True))
+        self.assertIn("retrospectively, per client (Q06", early["data"]["notes"][1])
+
+    def test_other_cards_are_not_back_dated_automatically(self):
+        later = {**self.card(), "effective_from": "2027-01-01", "source_id": "ratecard:2027-01-01"}
+        res = ratecard.lookup_rate([later], zone="Central", weight_kg=5, on_date="2026-06-01")
+        self.assertEqual(res["status"], "not_found")
+        self.assertIn("no client authority", res["reason"])
+
+    def test_ops_zone_maps_to_price_row(self):  # client Q03
+        answer = {**RATE_ANSWER, "rows": [{"label": "East / North-East", "cells": ["$1.10", "$2.20", "$3.30", "+$1.00"]},
+                                          {"label": "North / West", "cells": ["$1.20", "$2.40", "$3.60", "+$1.00"]}]}
+        cards = [ratecard.normalise(answer, source_id="r", image_ref="r", image_sha256="0", extraction={})]
+        look = lambda z: ratecard.lookup_rate(cards, zone=z, weight_kg=2, on_date="2026-05-01")  # noqa: E731
+        self.assertEqual([look(z)["data"]["price_zone"] for z in ("North-East", "East", "north", "West")],
+                         ["East / North-East", "East / North-East", "North / West", "North / West"])
+        self.assertEqual(look("Mars")["status"], "not_found")
 
     def test_surcharge_row_without_plus_sign_is_still_a_surcharge(self):
         # seen on the real card: the model copied "+$1.50" as "$1.50" for the ERP row

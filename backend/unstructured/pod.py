@@ -195,10 +195,16 @@ def build_record(answer: Optional[Dict[str, Any]], *, source_id: str, image_ref:
 
 def find_pod(records: List[Dict[str, Any]], source_system: str, order_id: int) -> Dict[str, Any]:
     """Look up an extracted POD record. A v2 order never gets a v1 card (T-A05)."""
-    hits = [r for r in records if r["source_system"] == source_system.lower() and r["order_id"] == int(order_id)]
+    system = source_system.lower()
+    hits = [r for r in records if r["source_system"] == system and r["order_id"] == int(order_id)]
     if not hits:
-        return {"ok": True, "status": "not_found", "data": None, "sources": [], "error": None,
-                "reason": f"no POD scan on file for {source_system.lower()} order {order_id}"}
+        if system == "v2":  # client Q04: say exactly that there is no POD, never imply a check
+            reason = (f"No POD on file for v2 order {order_id}. Since the 1 Feb 2026 migration drivers sign off in the "
+                      "vendor's app and the client has no export (client Q04).")
+        else:
+            reason = (f"No POD scan on file for {system} order {order_id}. The client supplied 80 scans, all from the "
+                      "old system, and has no others (client Q04).")
+        return {"ok": True, "status": "not_found", "data": None, "sources": [], "error": None, "reason": reason}
     r = hits[0]
     return {"ok": True, "status": "found" if r["status"] == "ok" else "partial", "data": r, "sources": [r["source_id"]],
             "error": None}

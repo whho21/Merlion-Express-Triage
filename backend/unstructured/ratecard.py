@@ -1,10 +1,14 @@
-"""Rate-card extraction and lookup (Developer A, task 5). Record shape: docs/02-Design/contracts.md section 3.
+"""Rate-card extraction and lookup (Developer A). Record shape: docs/02-Design/contracts_2026-11-16.md section 3.
 
-The model copies the table cell by cell; code parses prices, bands, surcharges and notes.
-Traps enforced here:
-  T-A15  a date before the card's effective_from -> not_found (never falls back to the April card silently)
-  T-A16  a weight exactly on a shared band edge (3 kg, 10 kg) -> ambiguous, both candidates returned
-Zone and service type are NOT in the orders table (client question A-Q4): the caller must supply them.
+The model copies the table cell by cell; code parses prices, bands, surcharges and notes. What the image says is
+never rewritten; the client's answers (16 Nov) are applied in lookup_rate and cited:
+  Q06  no earlier card exists: the April 2026 card applies to every order in the package, marked
+       "rate card applied retrospectively, per client". Only cards listed in RETROSPECTIVE_AUTHORITY get this;
+       a future card is not back-dated automatically.
+  Q07  upper weight limit inclusive: 0 < w <= 3, 3 < w <= 10, 10 < w <= 25. Over 25 kg is quoted by hand.
+  Q08  every order is standard delivery (same-day is booked by phone, not in the data).
+  Q03  pricing zones group the five ops zones: Central; East + North-East; North + West; Sentosa / Jurong Island.
+       The ops zone comes from the town in the delivery address (B's lookup); this module maps it to the price row.
 """
 from __future__ import annotations
 
@@ -28,6 +32,16 @@ MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "
                                       "september", "october", "november", "december"], start=1)}
 EFFECTIVE_RE = re.compile(r"effective\s+(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", re.I)
 PRICE_RE = re.compile(r"^\s*(\+)?\s*\$\s?(\d+(?:\.\d{1,2})?)\s*$")
+BOUNDARY_RULE = "upper limit inclusive: min < weight <= max (client Q07)"
+RETROSPECTIVE_AUTHORITY = {
+    "2026-04-01": "rate card applied retrospectively, per client (Q06, 16 Nov 2026): no earlier card exists and the "
+                  "standard prices did not change",
+}
+STANDARD_ONLY = "standard delivery (client Q08: every order in the data is standard; same-day is not in the data)"
+OPS_TO_PRICE_ZONE = {  # client Q03: ops zone -> price row label prefix
+    "central": "central", "east": "east", "north-east": "east", "north east": "east", "northeast": "east",
+    "north": "north", "west": "north", "sentosa": "sentosa", "jurong island": "sentosa",
+}
 SURCHARGE_LABEL_RE = re.compile(r"\b(ERP|surcharge|peak|hours?)\b", re.I)
 BAND_RE = re.compile(r"^\s*(?:<=|≤|up to)\s*(\d+(?:\.\d+)?)\s*kg\s*$|^\s*(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*kg\s*$",
                      re.I)
@@ -85,9 +99,8 @@ def normalise(answer: Dict[str, Any], *, source_id: str, image_ref: str, image_s
     columns = answer.get("columns") or []
     bands = [b for b in (_band(c) for c in columns[1:]) if b]
     surcharge_col = next((i for i, c in enumerate(columns[1:]) if "same" in (c or "").lower()), None)
-    for a, b in zip(bands, bands[1:]):
-        if a["max_kg"] >= b["min_kg"]:
-            a["boundary_rule"] = b["boundary_rule"] = "UNRESOLVED (client A-Q4)"
+    for band in bands:  # printed labels overlap at 3 and 10 kg; the client settled it (Q07)
+        band["boundary_rule"] = BOUNDARY_RULE
     rows, surcharges = [], []
     for row in answer.get("rows") or []:
         label, cells = (row.get("label") or "").strip(), row.get("cells") or []
@@ -128,23 +141,54 @@ def normalise(answer: Dict[str, Any], *, source_id: str, image_ref: str, image_s
             "notes": _notes(answer.get("notes") or []), "status": status, "issues": issues, "extraction": extraction}
 
 
+def _envelope(status: str, data: Any = None, sources: Optional[List[str]] = None, **extra: Any) -> Dict[str, Any]:
+    return {"ok": True, "status": status, "data": data, "sources": sources or [], "error": None, **extra}
+
+
+def price_zone_for(zone: str, rows: List[Dict[str, Any]]) -> Optional[str]:
+    """Accept a price-row label ("East / North-East") or an ops zone ("North-East", client Q03)."""
+    wanted = (zone or "").strip().lower()
+    labels = sorted({r["zone"] for r in rows})
+    for label in labels:
+        if label.lower() == wanted:
+            return label
+    prefix = OPS_TO_PRICE_ZONE.get(wanted)
+    return next((label for label in labels if prefix and label.lower().startswith(prefix)), None)
+
+
 def lookup_rate(cards: List[Dict[str, Any]], *, zone: str, weight_kg: float, on_date: str) -> Dict[str, Any]:
-    """Price for one parcel. Returns the team's tool envelope with a citation per candidate."""
+    """Standard price for one parcel, cited to the card cell. Applies client answers Q03, Q06, Q07, Q08."""
     day = datetime.fromisoformat(on_date).date()
-    usable = [c for c in cards if c.get("effective_from") and date.fromisoformat(c["effective_from"]) <= day
+    dated = [c for c in cards if c.get("effective_from")]
+    usable = [c for c in dated if date.fromisoformat(c["effective_from"]) <= day
               and (not c.get("effective_to") or day <= date.fromisoformat(c["effective_to"]))]
-    if not usable:
-        earliest = min((c["effective_from"] for c in cards if c.get("effective_from")), default=None)
-        return {"ok": True, "status": "not_found", "data": None, "sources": [], "error": None,
-                "reason": f"no rate card on file for {day.isoformat()} (earliest card starts {earliest}; client A-Q2)"}
-    card = max(usable, key=lambda c: c["effective_from"])
-    hits = [r for r in card["rows"] if r["zone"].lower() == zone.lower() and r["min_kg"] <= weight_kg <= r["max_kg"]]
+    notes: List[str] = [STANDARD_ONLY]
+    if usable:
+        card = max(usable, key=lambda c: c["effective_from"])
+    else:
+        allowed = [c for c in dated if c["effective_from"] in RETROSPECTIVE_AUTHORITY]
+        if not allowed:
+            earliest = min((c["effective_from"] for c in dated), default=None)
+            return _envelope("not_found", reason=f"no rate card on file for {day.isoformat()} "
+                                                 f"(earliest card starts {earliest}; no client authority to back-date it)")
+        card = min(allowed, key=lambda c: c["effective_from"])
+        notes.append(RETROSPECTIVE_AUTHORITY[card["effective_from"]])
+    if weight_kg is None or weight_kg <= 0:
+        return _envelope("not_found", reason=f"invalid parcel weight {weight_kg!r}")
+    top = max((r["max_kg"] for r in card["rows"]), default=0)
+    if weight_kg > top:
+        return _envelope("not_found", reason=f"{weight_kg} kg is over {top:g} kg: quoted by hand, not on the card (client Q07)")
+    label = price_zone_for(zone, card["rows"])
+    if label is None:
+        return _envelope("not_found", reason=f"zone {zone!r} is not a pricing zone or ops zone on card {card['source_id']}")
+    hits = [r for r in card["rows"] if r["zone"] == label and r["min_kg"] < weight_kg <= r["max_kg"]]
     if not hits:
-        return {"ok": True, "status": "not_found", "data": None, "sources": [], "error": None,
-                "reason": f"no rate for zone {zone!r} at {weight_kg} kg on card {card['source_id']}"}
-    data = [{"price": r["price"], "band": r["band"], "citation": {"source_id": card["source_id"], "type": "image",
-             "ref": card["image_ref"], "locator": r["locator"], "record_key": None}} for r in hits]
-    if len(hits) > 1:
-        return {"ok": True, "status": "ambiguous", "data": data, "sources": [card["source_id"]], "error": None,
-                "reason": f"{weight_kg} kg sits on a shared band edge; boundary rule unresolved (client A-Q4)"}
-    return {"ok": True, "status": "found", "data": data[0], "sources": [card["source_id"]], "error": None}
+        return _envelope("not_found", reason=f"no {label} price for {weight_kg} kg on card {card['source_id']}")
+    data = [{"price": r["price"], "currency": card.get("currency", "SGD"), "gst_included": False, "band": r["band"],
+             "price_zone": label, "zone_input": zone, "boundary_rule": BOUNDARY_RULE,
+             "applied_retrospectively": not usable, "notes": notes,
+             "citation": {"source_id": card["source_id"], "type": "image", "ref": card["image_ref"],
+                          "locator": r["locator"], "record_key": None}} for r in hits]
+    if len(hits) > 1:  # only if a future card has overlapping bands with no client rule
+        return _envelope("ambiguous", data, [card["source_id"]], reason="weight matches more than one band")
+    return _envelope("found", data[0], [card["source_id"]])

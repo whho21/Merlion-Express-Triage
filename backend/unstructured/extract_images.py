@@ -23,6 +23,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 from . import llm, pod, ratecard
 from .cache import ExtractionCache, cache_key
+from .paths import default_data_dir, source_ref
 from .sqlref import Reference
 
 POD_DIR = Path("images") / "proof_of_delivery"
@@ -79,7 +80,7 @@ class Extractor:
 
 
 def _ref(data_dir: Path, path: Path) -> str:
-    return "data/" + path.relative_to(data_dir).as_posix()
+    return source_ref(path, data_dir)
 
 
 def list_images(data_dir: Path, limit: Optional[int]) -> Dict[str, List[Path]]:
@@ -188,13 +189,15 @@ def dry_run(data_dir: Path, out_dir: Path, limit: Optional[int], only: Optional[
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Extract POD cards and rate cards with the class vision model.")
-    parser.add_argument("--data", type=Path, default=Path("data"))
+    parser.add_argument("--data", type=Path, default=None,
+                        help="package folder (default: data/team2_merlion_express_package if present, else data)")
     parser.add_argument("--out", type=Path, default=Path("output") / "unstructured")
     parser.add_argument("--limit", type=int, default=None, help="only the first N POD cards (smoke test)")
     parser.add_argument("--only", choices=["pod", "ratecard"], default=None)
     parser.add_argument("--sql", type=Path, default=None, help="SQL dump for validation (default data/sql/merlion_ops.sql)")
     parser.add_argument("--dry-run", action="store_true", help="count what would be sent; no API call, no cost")
     args = parser.parse_args(argv)
+    args.data = args.data or default_data_dir()
 
     if not (args.data / POD_DIR).is_dir() and not (args.data / RATE_DIR).is_dir():
         print(f"ERROR: no images under {args.data}", file=sys.stderr)

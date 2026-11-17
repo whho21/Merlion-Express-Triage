@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from .masking import mask_text
+from .paths import source_ref
 
 PARSER_VERSION = "emails-1.0"
 REQUIRED_HEADERS = ("From", "To", "Date", "Subject")
@@ -196,7 +197,7 @@ def parse_email_text(text: str, source_id: str, ref: str) -> Dict[str, Any]:
 def parse_email_file(path: Path, data_dir: Path) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Return (record, manifest_entry) for one file. Unreadable files give a failed record, not an exception."""
     raw = path.read_bytes()
-    ref = "data/" + path.relative_to(data_dir).as_posix()
+    ref = source_ref(path, data_dir)
     source_id = f"email:{path.stem}"
     try:
         text = raw.decode("utf-8")

@@ -60,6 +60,22 @@ class SearchTests(unittest.TestCase):
         res = search.search_policy("lost parcel refund", out_dir=self.out)
         self.assertEqual((res["status"], res["data"][0]["citation"]["locator"]), ("found", "section:Refunds|line:2-3"))
 
+    def test_policy_by_email_category_and_everyday_words(self):
+        rows = [{"source_id": "policy:g", "ref": "data/tabular/g.xlsx", "locator": "sheet:Guide|row:5", "heading": "Wrong address",
+                 "text": "Complaint type: Wrong address. Resolution: re-deliver free", "email_categories": ["wrong_address"]},
+                {"source_id": "policy:g", "ref": "data/tabular/g.xlsx", "locator": "sheet:Guide|row:6", "heading": "COD overcharge",
+                 "text": "Complaint type: COD overcharge. Resolution: refund the difference", "email_categories": ["cod_wrong"]}]
+        (self.out / "policy_chunks.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+        by_cat = search.search_policy(category="cod_wrong", out_dir=self.out)
+        self.assertEqual((by_cat["status"], by_cat["data"][0]["citation"]["locator"]), ("found", "sheet:Guide|row:6"))
+        none = search.search_policy(category="compliment", out_dir=self.out)
+        self.assertEqual((none["ok"], none["status"]), (True, "not_found"))
+        # "block" and "cash" are not in the guide's wording; the query-side synonyms bridge them
+        self.assertEqual(search.search_policy("delivered to the wrong block", out_dir=self.out)["data"][0]["heading"],
+                         "Wrong address")
+        self.assertEqual(search.search_policy("driver took extra cash", out_dir=self.out)["data"][0]["heading"],
+                         "COD overcharge")
+
     def test_telemetry_has_no_query_text(self):
         search.search_emails("secret words here", out_dir=self.out)
         self.assertNotIn("secret", (self.out / "telemetry.jsonl").read_text(encoding="utf-8"))
