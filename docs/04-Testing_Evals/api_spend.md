@@ -12,6 +12,8 @@ Each A run also appends a line to `output/unstructured/spend_log.jsonl` (local) 
 | 2026-11-16 | Ralph (A) | Rebuild records after two rule fixes (all 81 from cache) | gpt-4o-mini | 0 | 0 / 0 | 0.0000 | 0.3186 | 0.64% |
 | 2026-11-17 | Ralph (A) | Vector index build — **refused: HTTP 429 `credit_balance_exhausted`** (also on gpt-4o-mini) | text-embedding-3-small | 0 | 0 / 0 | 0.0000 | 0.3186 | 0.64% |
 
+| 2026-11-17 | Ralph (A) | Vector index built with **local** embeddings instead (numpy, offline) | local-tfidf-chargram-v1 | 0 | 0 / 0 | 0.0000 | 0.3186 | 0.64% |
+
 **17 Nov: the team key reports no credit remaining for every model.** A's own spend is US$0.32, so this was not
 A's runs. To raise with John/Leonard; all paid work (A's vector index, C's agent) is blocked until credit is restored.
 

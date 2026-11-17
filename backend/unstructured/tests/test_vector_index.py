@@ -142,6 +142,56 @@ class VectorIndexTests(unittest.TestCase):
                          (False, "EMBED_HTTP_429", True))
 
 
+@unittest.skipUnless(vector_index.HAVE_FAISS, "faiss-cpu/numpy not installed")
+class LocalEmbeddingTests(unittest.TestCase):
+    """The free, offline backend (numpy TF-IDF over words + character n-grams)."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.out = Path(self._tmp.name)
+        (self.out / "emails.jsonl").write_text("\n".join(json.dumps(e) for e in EMAILS) + "\n", encoding="utf-8")
+        (self.out / "policy_chunks.jsonl").write_text("\n".join(json.dumps(r) for r in RULES) + "\n", encoding="utf-8")
+        (self.out / "manifest.json").write_text(json.dumps({"files": []}), encoding="utf-8")
+        vector_index._CACHE.clear()
+
+    def tearDown(self):
+        vector_index._CACHE.clear()
+        self._tmp.cleanup()
+
+    def test_local_build_needs_no_embedder_and_saves_its_model(self):
+        summary = vector_index.build(self.out, model="local-tfidf-chargram-v1")
+        self.assertEqual((summary["embed_model"], summary["chunks"], summary["prompt_tokens"]),
+                         ("local-tfidf-chargram-v1", "5", 0))
+        self.assertTrue((vector_index.index_dir(self.out) / "local_embed.npz").is_file())
+
+    def test_search_uses_the_local_model_automatically_and_tolerates_typos(self):
+        vector_index.build(self.out, model="local-tfidf-chargram-v1")
+        res = search.search_policy("lat parcle apolgy", mode="vector", out_dir=self.out)
+        self.assertEqual((res["status"], res["data"][0]["heading"]), ("found", "Late delivery"))
+        thrown = search.search_policy("parcel smashd thrwn", mode="vector", out_dir=self.out)
+        self.assertEqual(thrown["data"][0]["heading"], "Damaged / thrown parcel")
+        self.assertEqual(res["retrieval"], "vector:local-tfidf-chargram-v1")
+
+    def test_unrelated_question_is_not_found(self):
+        vector_index.build(self.out, model="local-tfidf-chargram-v1")
+        res = search.search_policy("weather in tokyo", mode="vector", out_dir=self.out)
+        self.assertEqual(res["status"], "not_found")
+
+    def test_vectors_are_deterministic_and_normalised(self):
+        from backend.unstructured.local_embed import LocalEmbedder
+        emb = LocalEmbedder.fit(["late parcel", "thrown parcel"])
+        (a,), _ = emb(["late parcel"])
+        (b,), _ = emb(["late parcel"])
+        self.assertEqual(a, b)
+        self.assertAlmostEqual(sum(x * x for x in a), 1.0, places=5)
+
+    def test_missing_local_model_file_falls_back_to_keyword(self):
+        vector_index.build(self.out, model="local-tfidf-chargram-v1")
+        (vector_index.index_dir(self.out) / "local_embed.npz").unlink()
+        res = search.search_policy("late parcel", out_dir=self.out)
+        self.assertEqual(res["retrieval"], "keyword (fallback: INDEX_MISSING)")
+
+
 class FallbackWithoutIndexTests(unittest.TestCase):
     """These run even without faiss installed."""
 

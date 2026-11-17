@@ -42,8 +42,9 @@ INDEX_VERSION = "a-vec-1"
 DB_NAME = "a_index.sqlite"
 FAISS_NAME = "a_index.faiss"
 SOURCE_FILES = ("emails.jsonl", "policy_chunks.jsonl")
-MIN_SIMILARITY = 0.30  # cosine; below this a vector hit is "not relevant". PROVISIONAL: calibrate on the first
-                       # real build (relevant vs unrelated questions) — the team key had no credit on 17 Nov.
+MIN_SIMILARITY = 0.30  # cosine, API embeddings: below this a hit is "not relevant". PROVISIONAL until the first
+                       # API build (the team key had no credit on 17 Nov).
+LOCAL_MIN_SIMILARITY = 0.10  # cosine, local TF-IDF embeddings; calibrated 17 Nov on real data (see handoff)
 
 Embedder = Callable[[List[str]], Tuple[List[List[float]], Dict[str, int]]]
 
@@ -138,16 +139,33 @@ def _normalise(matrix: "np.ndarray") -> "np.ndarray":
     return (matrix / norms).astype("float32")
 
 
-def build(out_dir: Path, *, model: str, embedder: Embedder) -> Dict[str, Any]:
-    """(Re)build SQLite + FAISS from the ingest outputs. Only new/changed chunks are sent for embedding."""
+def is_local(model: str) -> bool:
+    return (model or "").startswith("local-")
+
+
+def build(out_dir: Path, *, model: str, embedder: Optional[Embedder] = None) -> Dict[str, Any]:
+    """(Re)build SQLite + FAISS from the ingest outputs.
+
+    model "local-…": numpy TF-IDF embeddings fitted on this corpus (free, offline; embedder ignored).
+    any other model: the given embedder (API); only new/changed chunks are sent, the rest come from the cache.
+    """
     if not HAVE_FAISS:
         raise VectorUnavailable("NO_FAISS", "faiss-cpu / numpy not installed (pip install -r backend/unstructured/requirements.txt)")
     rows = collect_chunks(out_dir)
     folder = index_dir(out_dir)
     folder.mkdir(parents=True, exist_ok=True)
+    if is_local(model):
+        from .local_embed import LocalEmbedder
+        fitted = LocalEmbedder.fit([r["embed_text"] for r in rows])
+        fitted.save(folder)
+        embedder = fitted
+    elif embedder is None:
+        raise VectorUnavailable("NO_EMBEDDER", f"no embedder for model {model!r}")
     con = sqlite3.connect(folder / DB_NAME)
     try:
         con.executescript(SCHEMA)
+        if is_local(model):  # vectors depend on the fitted IDF, so never reuse cached local vectors
+            con.execute("DELETE FROM embedding_cache WHERE model = ?", (model,))
         for row in rows:
             row["embed_key"] = _embed_key(model, row["embed_text"])
         cached = {k for (k,) in con.execute("SELECT key FROM embedding_cache WHERE model = ?", (model,))}
@@ -178,7 +196,7 @@ def build(out_dir: Path, *, model: str, embedder: Embedder) -> Dict[str, Any]:
                 "built_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "chunks": str(len(rows)), "emails": str(sum(r["kind"] == "email" for r in rows)),
                 "policy": str(sum(r["kind"] == "policy" for r in rows)), "sources_sha256": _sources_sha(out_dir),
-                "min_similarity": str(MIN_SIMILARITY)}
+                "min_similarity": str(LOCAL_MIN_SIMILARITY if is_local(model) else MIN_SIMILARITY)}
         con.execute("DELETE FROM meta")
         con.executemany("INSERT INTO meta (key, value) VALUES (?, ?)", meta.items())
         con.commit()
@@ -205,8 +223,10 @@ class VectorIndex:
         self._query_cache: Dict[str, "np.ndarray"] = {}
 
     def search(self, query: str, embedder: Embedder, *, kind: Optional[str] = None,
-               min_similarity: float = MIN_SIMILARITY) -> List[Tuple[float, Dict[str, Any]]]:
-        masked = mask_text(query)[0]  # the query also leaves the machine: mask it the same way
+               min_similarity: Optional[float] = None) -> List[Tuple[float, Dict[str, Any]]]:
+        if min_similarity is None:
+            min_similarity = float(self.meta.get("min_similarity", MIN_SIMILARITY))
+        masked = mask_text(query)[0]  # mask the query the same way the indexed text was masked
         if masked not in self._query_cache:
             vectors, _ = embedder([masked])
             self._query_cache[masked] = _normalise(np.asarray(vectors, dtype="float32"))
@@ -220,10 +240,27 @@ class VectorIndex:
         return hits
 
 
-def make_embedder(out_dir: Path, tool: str) -> Tuple[Embedder, str]:
-    """Embedder bound to the TEAM key and model from the team repo .env (llm.settings)."""
+def query_embedder(vi: "VectorIndex", out_dir: Path) -> Embedder:
+    """The embedder that matches how this index was built (never mix models between index and query)."""
+    model = vi.meta.get("embed_model", "")
+    if is_local(model):
+        from .local_embed import LocalEmbedder
+        try:
+            return LocalEmbedder.load(vi.folder)
+        except (OSError, ValueError, KeyError) as exc:
+            raise VectorUnavailable("INDEX_MISSING", f"local embedder file missing or invalid: {exc}") from exc
+    return make_embedder(out_dir, tool="embed_query", model=model)[0]
+
+
+def make_embedder(out_dir: Path, tool: str, model: Optional[str] = None) -> Tuple[Optional[Embedder], str]:
+    """Embedder from the team repo .env. A_EMBED_MODEL unset -> local TF-IDF (free, offline; returns None and
+    build() fits it). Set A_EMBED_MODEL=text-embedding-3-small to use the class endpoint with the TEAM key."""
     from . import llm  # local import: keeps this module importable without the network layer in tests
     cfg = llm.settings(Path.cwd())
+    model = model or cfg["embed_model"] or "local-tfidf-chargram-v1"
+    if is_local(model):
+        return None, model
+    cfg = {**cfg, "embed_model": model}
 
     def embed(texts: List[str]) -> Tuple[List[List[float]], Dict[str, int]]:
         try:

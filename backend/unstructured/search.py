@@ -24,7 +24,9 @@ from .llm import log_telemetry
 DEFAULT_OUT = Path("output") / "unstructured"
 TOKEN_RE = re.compile(r"[a-z0-9_]+")
 STOPWORDS = set("a an and are as at be but by for from has have i in is it its me my not of on or our so the "
-                "this to was we with you your".split())
+                "this to was we with you your "
+                # question words (17 Nov: "what"/"do" matched the guide's notes for unrelated questions)
+                "what how do does did who can could will would should if any please today tell".split())
 SNIPPET_CHARS = 240
 # Everyday words -> the wording the guide/emails use. Query side only, so source text and citations never change.
 # Added from measured misses on 17 Nov ("wrong block" vs "Wrong address", "cash on delivery" vs "COD").
@@ -101,7 +103,7 @@ def _ranked(query: str, pool: List[Dict[str, Any]], text_of, key_of, kind: str, 
         return kw, "keyword", None
     try:
         vi = vector_index.load(out_dir)
-        emb = embedder or vector_index.make_embedder(out_dir, tool="embed_query")[0]
+        emb = embedder or vector_index.query_embedder(vi, out_dir)
         vhits = vi.search(query, emb, kind=kind)
     except vector_index.VectorUnavailable as exc:
         if mode == "vector":

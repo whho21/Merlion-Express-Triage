@@ -75,7 +75,7 @@ def settings(repo_root: Path) -> Dict[str, Optional[str]]:
     env_file = read_dotenv(repo_root / ".env")
     pick = lambda name, default=None: os.environ.get(name) or env_file.get(name) or default  # noqa: E731
     return {"api_key": pick("OPENAI_API_KEY"), "base_url": pick("OPENAI_BASE_URL", DEFAULT_BASE_URL),
-            "model": pick("A_VISION_MODEL", DEFAULT_MODEL), "embed_model": pick("A_EMBED_MODEL", DEFAULT_EMBED_MODEL)}
+            "model": pick("A_VISION_MODEL", DEFAULT_MODEL), "embed_model": pick("A_EMBED_MODEL")}
 
 
 def _urllib_transport(url: str, headers: Dict[str, str], body: bytes, timeout: float) -> Tuple[int, bytes]:

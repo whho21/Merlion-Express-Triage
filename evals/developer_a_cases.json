@@ -1,6 +1,6 @@
 {
   "owner": "Developer A (Ralph)",
-  "about": "Checkable extraction/retrieval cases on the real package. Sanitised: file stems and order numbers only. Run: python -m backend.unstructured.evals. PENDING = the output it needs is not built yet. Updated 17 Nov for the client's answers Q01-Q08 (guide received; April card applies retrospectively; upper weight limit inclusive; no POD after 1 Feb). E may fold these into the team runner. A-E19..A-E21 (17 Nov) need the vector index (python -m backend.unstructured.build_index) and stay PENDING until it is built; their expectations are targets, not yet observed.",
+  "about": "Checkable extraction/retrieval cases on the real package. Sanitised: file stems and order numbers only. Run: python -m backend.unstructured.evals. PENDING = the output it needs is not built yet. Updated 17 Nov for the client's answers Q01-Q08 (guide received; April card applies retrospectively; upper weight limit inclusive; no POD after 1 Feb). E may fold these into the team runner. A-E19..A-E21 (17 Nov) test the vector index (local TF-IDF embeddings, built by python -m backend.unstructured.build_index): typo tolerance and no-guess on unrelated questions. Known limit, not a case yet: pure synonyms ('smashed' = damaged, 'super kind' = polite) need the API embedding model; retest when the team key has credit.",
   "cases": [
     {
       "id": "A-E01",
@@ -390,17 +390,16 @@
     {
       "id": "A-E19",
       "trap": "-",
-      "title": "Meaning search finds the rule when no keyword matches ('smashed' -> damaged)",
+      "title": "Typos still find the rule via hybrid search ('delivry came very lat' -> Late delivery; keyword alone misses)",
       "needs": "index/a_index.faiss",
       "call": "search_policy",
       "args": {
-        "query": "item inside was smashed",
-        "mode": "hybrid"
+        "query": "delivry came very lat"
       },
       "expect": [
         {
           "path": "data.0.heading",
-          "equals": "Damaged / thrown parcel"
+          "equals": "Late delivery"
         },
         {
           "path": "retrieval",
@@ -411,12 +410,11 @@
     {
       "id": "A-E20",
       "trap": "-",
-      "title": "An unrelated question finds no rule by meaning (no nearest-neighbour guess)",
+      "title": "An unrelated question finds no rule (no nearest-neighbour guess)",
       "needs": "index/a_index.faiss",
       "call": "search_policy",
       "args": {
-        "query": "what is the weather in Tokyo today",
-        "mode": "vector"
+        "query": "what is the weather in Tokyo today"
       },
       "expect": [
         {
@@ -427,18 +425,17 @@
     },
     {
       "id": "A-E21",
-      "trap": "T-A04",
-      "title": "A compliment in new words is found by meaning",
+      "trap": "-",
+      "title": "Misspelt address complaint finds the Wrong address rule",
       "needs": "index/a_index.faiss",
-      "call": "search_emails",
+      "call": "search_policy",
       "args": {
-        "query": "the delivery uncle was super kind",
-        "mode": "vector"
+        "query": "wrng adress deliverd"
       },
       "expect": [
         {
-          "path": "data.0.category",
-          "equals": "compliment"
+          "path": "data.0.heading",
+          "equals": "Wrong address"
         }
       ]
     }

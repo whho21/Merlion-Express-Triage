@@ -6,51 +6,66 @@
 
 ## Scope
 
-**Built and tested; the real index is NOT built yet — the team API key has no credit (see Blocker).**
+**Built, indexed on the real data, measured.** Because the team API key has no credit (see below), the team said
+"ignore the API, use what we have": the index uses **local embeddings computed with numpy** (free, offline). The
+API embedding model is one setting away (`A_EMBED_MODEL=text-embedding-3-small`) once credit returns.
 
-- `backend/unstructured/vector_index.py` — SQLite holds every chunk (text, source, exact locator, category, date,
-  order numbers, guide version) plus an embedding cache; FAISS (`IndexFlatIP` on normalised vectors = cosine) holds
-  the vectors keyed by SQLite row id, so every vector hit maps back to a verifiable citation.
+- `backend/unstructured/vector_index.py` — **SQLite** holds every chunk (text, source, exact locator, category, date,
+  order numbers, guide version) plus an embedding cache; **FAISS** (`IndexFlatIP` on normalised vectors = cosine)
+  holds the vectors keyed by SQLite row id, so every vector hit maps back to a verifiable citation.
+- `backend/unstructured/local_embed.py` — **local embeddings** (`local-tfidf-chargram-v1`): TF-IDF over hashed word
+  unigrams/bigrams + character 3–5-grams, 16,384 dimensions, IDF fitted on the indexed corpus and saved next to the
+  index so queries use the same transform. Handles typos and word forms; does **not** know synonyms.
 - Chunks are natural units: one per complaint email (subject + body) and one per Resolution Guide rule/note
   (90 + 12 = 102). No splitting or overlap: the longest chunk is ~310 characters.
-- **PDPA:** text is masked (`masking.mask_text`) before it is sent to the embedding endpoint, and so is the user's
-  question. The full text stays only in the local SQLite file under `output/` (git-ignored).
-- **Cost control:** vectors cached in SQLite by sha256(model + masked text) — a rebuild embeds only new/changed
-  chunks. Each embedding call logs tokens + cost (no text) to `telemetry.jsonl`; each build is added to `spend_log.jsonl`.
-- **Stale guard:** the index stores the sha256 of `emails.jsonl` + `policy_chunks.jsonl`; if they change, search
-  reports `INDEX_STALE` and uses keyword until `build_index` is rerun.
+- **PDPA:** chunk text and the user's question are masked before embedding (needed for the API backend; applied to
+  local too for one code path). The full text stays only in the local SQLite file under `output/` (git-ignored).
+- **Cost control:** API vectors are cached in SQLite by sha256(model + masked text); a rebuild embeds only new or
+  changed chunks. Local vectors are recomputed each build (free, < 2 s). **Stale guard:** if the ingest outputs
+  change, search reports `INDEX_STALE` and uses keyword until `build_index` is rerun.
 - **Search (`search.py`)**: `mode="hybrid"` (default) fuses keyword ranks and vector ranks (reciprocal rank fusion,
-  k=60); `mode="vector"` FAISS only; `mode="keyword"` never calls the AI. Exact paths are unchanged:
-  `category` → that rule row, `order_number` → that order's emails. Every result now has a `retrieval` field
-  (`hybrid:keyword+text-embedding-3-small`, `vector:…`, `keyword`, `keyword (fallback: <CODE>)`, `category`,
-  `order_filter`). If the vector side is unavailable, hybrid falls back to keyword and says why; vector mode returns
-  `failed` with the code instead of guessing.
-- `llm.embed_texts` (batched, 3 bounded retries, cost per call). `ask.py` now prints the search method.
-- **Install** for vector search: `pip install -r backend/unstructured/requirements.txt` (faiss-cpu, numpy).
-  Without them everything else still runs and search says `keyword (fallback: NO_FAISS)`.
-- **Checks:** 84 unit tests pass (14 new: build, cache reuse, masking of what leaves the machine, kind filter,
-  threshold, stale refusal, exact email citations from vector hits, order filter, fallbacks on endpoint failure /
-  no index / no faiss, keyword mode never calls the embedder, bad mode). Evals: 18/18 pass on real data (keyword
-  fallback); A-E19..A-E21 added for vector behaviour and **PENDING** until the index is built.
+  k=60); `mode="vector"`; `mode="keyword"` (never embeds). Exact paths unchanged: `category` → that rule row,
+  `order_number` → that order's emails. Every result has `retrieval` (e.g. `hybrid:keyword+local-tfidf-chargram-v1`,
+  `keyword (fallback: INDEX_MISSING)`). The query embedder always matches the model the index was built with.
+- Also: question words (what, how, do, who, …) added to the keyword stopwords — they matched the guide's notes for
+  unrelated questions.
 
-## Blocker — team API key out of credit (found 17 Nov)
+## Measurements (real guide, 17 Nov; 19 questions = 16 from the 17 Nov guide handoff + 3 with typos; 5 unrelated)
 
-`python -m backend.unstructured.build_index` got HTTP 429 `insufficient_quota / credit_balance_exhausted`
-("You have no credits remaining") for every embedding model **and for gpt-4o-mini chat** — so it affects C's agent
-too, not only A. A's recorded spend is US$0.32 of the US$50 budget, so the credit was not used up by A's runs. It may
-be the account behind the key rather than our usage. **Raise with Leonard today.** Do not switch to the class key.
+| Mode | Right rule first | Typos caught | Unrelated → "no rule" |
+|---|---:|---:|---:|
+| keyword | 15/19 | 0/3 | 5/5 |
+| vector (local) | 11/19 | 2/3 | 5/5 |
+| **hybrid (default)** | **16/19** | **2/3** | **5/5** |
 
-## Remaining (once credit is restored)
+- Hybrid wins: it keeps keyword's strength on clear wording and adds typo tolerance ("delivry came very lat",
+  "wrng adress deliverd"). It lost one keyword win ("extra cash on delivery" → Public holiday instead of COD).
+- Misses for every mode: "item inside was smashed", "parcle thrwn ovr the gate", and (hybrid) the cash case.
+  Pure synonyms ("smashed" = damaged) need a language-model embedding — the API backend — and are listed as a
+  known limit, to retest when credit returns.
+- Similarity cutoff for local vectors: **0.10** (unrelated questions scored 0.02–0.09). API cutoff 0.30 is
+  provisional until the first API build.
 
-1. `python -m backend.unstructured.build_index` — expected cost under US$0.001 (102 short texts).
-2. Calibrate `MIN_SIMILARITY` (provisional 0.30) on relevant vs unrelated questions.
-3. Measure keyword vs vector vs hybrid on the 16 questions from the 17 Nov guide handoff + Jeffrey's realistic
-   questions; record top-1 accuracy here and pick the default mode from the numbers.
-4. Run evals: A-E19..A-E21 should move from PENDING to PASS (or the expectation is wrong and gets fixed).
+## Checks
+
+- 89 unit tests pass (19 for the index: build, cache reuse, masking of what is sent, kind filter, threshold,
+  stale refusal, exact email citations from vector hits, order filter, fallbacks on endpoint failure / no index /
+  no faiss / missing local model file, keyword mode never embeds, local typo tolerance, determinism).
+- Evals: **21/21 pass** on the real data. A-E19..A-E21 now test typo tolerance and "no rule" for an unrelated
+  question.
+
+## Team API key: out of credit (found 17 Nov)
+
+HTTP 429 `insufficient_quota / credit_balance_exhausted` for every model, embeddings **and gpt-4o-mini chat** — it
+blocks C's agent too. A's logged spend is US$0.32 (81 calls, all 16 Nov 15:19–15:24 SGT); a scan of all 53 commits
+found no key in the repo. Cause unknown (shared account, another member's usage, or credit not loaded); raise with
+Leonard. Do not switch to the class key.
 
 ## Next Step
 
-- John / Leonard: restore API credit (blocks C's agent as well as A's index).
-- John (C): results now carry `retrieval`; show it in traces. Default `mode="hybrid"` is safe today because it falls
-  back to keyword.
-- Everyone who wants vector search locally: install `requirements.txt`, run ingest, then build_index.
+- Run: `pip install -r backend/unstructured/requirements.txt`, then `python -m backend.unstructured.ingest`,
+  then `python -m backend.unstructured.build_index` (free with the local model).
+- Jeffrey: realistic questions → re-measure the table above.
+- When credit returns: `A_EMBED_MODEL=text-embedding-3-small` + `build_index` (< US$0.001), calibrate the 0.30 cutoff,
+  and compare against the local model on the same questions.
+- John (C): default `mode="hybrid"`; show `retrieval` in traces.
