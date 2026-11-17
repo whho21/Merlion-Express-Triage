@@ -36,11 +36,11 @@ executables or scripts inside. Unzipped into `data/` (git-ignored).
 | Manifest item (brief) | Expected | Received | Status | Owner | Client question |
 |---|---|---|---|---|---|
 | `sql/merlion_ops.sql` | Ops SQL dump, v1 + v2 | 1 file, 5.8 MB (tables: drivers, orders, deliveries) | ✅ Received, B to profile | B | — |
-| `tabular/` | CS case log **and** Resolution Guide | **Folder absent** | ❌ **Missing** | B inventories / A retrieves | **A-Q1 (pending)** |
+| `tabular/` | CS case log **and** Resolution Guide | **Folder absent** | ❌ **Missing** | B inventories / A retrieves | **A-Q1 → answered 16 Nov (John's Q01/Q02): workbook received** |
 | `logs/gps_pings_sample.jsonl` | ~60k GPS pings | 1 file | ✅ Received, B to count/profile | B | — |
-| `images/proof_of_delivery/` | 80 scans | 80 JPG, **all v1** (orders Oct–Nov 2025) | ⚠️ Count OK, **no v2 scans** | A | **A-Q3 (pending)** |
-| `images/rate_cards/` | rate card image(s) | 1 JPG, effective 1 Apr 2026 | ⚠️ **No card before 1 Apr 2026** | A | **A-Q2, A-Q4 (pending)** |
-| `docs/complaint_emails/` | 90 emails | 90 TXT | ✅ Received | A | A-Q5 (pending) |
+| `images/proof_of_delivery/` | 80 scans | 80 JPG, **all v1** (orders Oct–Nov 2025) | ⚠️ Count OK, **no v2 scans** | A | **A-Q3 → answered (Q04): no POD after 1 Feb 2026, say so plainly** |
+| `images/rate_cards/` | rate card image(s) | 1 JPG, effective 1 Apr 2026 | ⚠️ **No card before 1 Apr 2026** | A | **A-Q2, A-Q4 → answered (Q06/Q07/Q08): April card applies to all; upper limit inclusive; standard only** |
+| `docs/complaint_emails/` | 90 emails | 90 TXT | ✅ Received | A | A-Q5 → answered by the case log: 73/79 senders listed with an Order Ref |
 | *(not in manifest)* `BRIEFING_team2_merlion_express.pdf`, `CLIENT_BRIEF.md` | — | 2 files at zip root | ℹ️ Identical to repo copies | — | — |
 
 ## Questions drafted by A (to captain for consolidation, 16 Nov)
@@ -57,4 +57,4 @@ Status: **drafted, not yet sent**. The captain consolidates and sends to the cou
 | A-Q5 | Customers never say V1 or V2, and the orders table has no email address. Is there a customer contact table that links sender emails to orders? | 47 of 82 complaint numbers exist in both systems with plausible dates. 12 match no order that existed when the email was sent. |
 
 **Timing risk:** the client replies within two working days. Sent by Tue 17 Nov → answer by Thu 19 Nov at the earliest,
-one day before Checkpoint 1 (Fri 20 Nov 17:00). Until answered, A-Q1 blocks policy search and the weekly view.
+one day before Checkpoint 1 (Fri 20 Nov 17:00). **Outcome:** John sent 16 Nov 6:42 PM, client answered the same evening, so no timing risk materialised.
