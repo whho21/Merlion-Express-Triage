@@ -49,3 +49,19 @@ driver/zone view (trap T-A04); `emails.jsonl` marks them `is_complaint: false`.
 
 **What it means for the app:** quote the data, state that the customer's claim differs, never repeat the claim as
 fact (hallucination deduction). Good demo material; `complaints_vs_pod.csv` has one row per complaint with the reason.
+
+### What the 33 contradictions are, in plain words
+
+**1. "Wrong block" claims — 17 emails.** The customer writes: "I stay at block 683, but your photo shows block 579."
+We look up their order in the database. The delivery address on record is *neither* block — not 683, not 579. So the
+customer's own address does not match what they say. (Numbers here are the pattern; the real values are in the CSV.)
+
+**2. "Still in transit" claims — 16 emails.** The customer writes: "I ordered 4 days ago and tracking still says
+IN_TRANSIT." The database says that order was *delivered*, and the order date does not match "4 days ago" either.
+
+**Why it matters.** If the app simply believes the customer and says "yes, your parcel went to the wrong block" or
+"yes, it is still in transit", it states something the records do not support — the hallucination deduction.
+The right answer is: "Our records show block X and status DELIVERED, which differs from what you wrote."
+
+**One caution.** These order numbers exist in both the old (v1) and new (v2) systems. Both were checked and the claim
+matched neither; the app should still say which system it looked at (B's candidate lookup decides, trap T-A01).
