@@ -1,7 +1,10 @@
 # Data audit — released package
 
-- **Checked:** 16 Nov 2026, SGT.
-- **Status:** Initial technical sanity review; full semantic audit remains open.
+- **Checked:** 16 Nov 2026, SGT. **Updated:** 17 Nov 2026 (client workbook counted; client replies Q01–Q08 recorded).
+- **Status:** Technical sanity review done 16 Nov. **A's semantic audit is complete**: every email, every POD scan
+  and the rate card were read one by one and cross-checked against SQL (section A below), and the client's
+  Resolution Guide was parsed on 17 Nov. B's structured-source audit (native MySQL, GPS alignment, Case Log content)
+  remains open; see "Open work" below.
 - **Package root:** `data/team2_merlion_express_package/` (local, Git-ignored).
 - **Owners:** 
   - A/Ralph (unstructured), 
@@ -13,7 +16,7 @@
 
 Read the package brief and both briefing PDF pages. Read the full SQL dump, all GPS JSONL lines and all 90 email text files. Opened all 81 JPEG files with Pillow integrity verification; visually inspected the rate card. Parsed the SQL CREATE/INSERT statements into an in-memory SQLite database for aggregate checks; no client records were committed or written into a replacement dataset. This is not evidence that a developer's running MySQL instance has loaded correctly, nor a MySQL compatibility/performance test. Each developer must independently check local MySQL using [seeding instructions](../../database/createdb_seed_sql_data.md).
 
-JPEG decoding is not a full visual/OCR audit of every POD. Email readability is not successful order resolution. Epoch conversion alone does not establish the business timezone or a correction. Retain these distinctions when reporting checkpoint completion.
+JPEG decoding is not a full visual/OCR audit of every POD (that audit was done separately by A: section A3). Email readability is not successful order resolution. Epoch conversion alone does not establish the business timezone or a correction. Retain these distinctions when reporting checkpoint completion.
 
 ## Inventory and observed counts
 
@@ -21,14 +24,15 @@ JPEG decoding is not a full visual/OCR audit of every POD. Email readability is 
 |---|---:|---|---|
 | `/sql/merlion_ops.sql` | 1 dump; 3 tables | Parsed; aggregate key/join/null checks below | Validate native MySQL loads, indexes, cleaning and repeatability |
 | `logs/gps_pings_sample.jsonl` | 60,000 records | 0 JSON parse failures; common keys `driver`, `ts`, `lat`, `lon`, `speed_kmh` | Time alignment, duplicate pings, driver/time coverage and relevance |
-| `docs/complaint_emails/` | 90 text files | All readable, non-empty and contain a Date header | Semantic extraction, identities, duplicates, complaint dates and attribution |
-| `images/proof_of_delivery/` | 80 JPEGs | All decode; filenames all identify v1; all filename order keys match orders | Visual/OCR accuracy, source conflicts, coverage expectations |
-| `images/rate_cards/` | 1 JPEG | Decodes; visually read effective date: 1 April 2026 | Validated structured extraction; historical coverage; applicability rules |
-| `tabular/` | 0 files | Directory exists but is empty | Obtain CS case log and Resolution Guide; Q01/Q02 |
+| `docs/complaint_emails/` | 90 text files | All readable, non-empty and contain a Date header | A: **done** (A2, A5): 90/90 parsed; type, order number, claims, v1/v2 ambiguity and coverage recorded. B: final v1/v2 order choice in the order lookup |
+| `images/proof_of_delivery/` | 80 JPEGs | All decode; filenames all identify v1; all filename order keys match orders | A: **done** (A3): every card read by eye and by the class vision model; key fields match SQL 80/80; conflicts recorded. Client confirms these 80 are all there is (Q04) |
+| `images/rate_cards/` | 1 JPEG | Decodes; visually read effective date: 1 April 2026 | A: **done** (A4): 12/12 prices extracted and checked. Client: no earlier card; April card applies to all orders; upper band limit inclusive (Q06/Q07) |
+| `tabular/` | 0 files in the zip; **1 workbook supplied separately** (16 Nov, 8:00 PM, with the client's Q01/Q02 reply) | `CS_case_log_Oct25-Jun26.xlsx` opened 17 Nov: tab **Case Log** 505 rows × 16 columns; tab **Resolution Guide** v2 (2 Mar 2026), 9 rules + 3 notes, parsed and cited by row (A) | B: Case Log content audit (duplicates, contacts, order refs, dates) |
 | `CLIENT_BRIEF.md` | 1 file | Read; compared expected sources with package | Track clarifications rather than invent absent rules |
 | `BRIEFING_team2_merlion_express.pdf` | 1 file, 2 pages | Text read | Its old checkpoint date is superseded by team instruction; preserve original |
 
-There are 175 non-OS-metadata files. Ignore `.DS_Store` when reconciling business inputs.
+There are 175 non-OS-metadata files. Ignore `.DS_Store` when reconciling business inputs. The client's workbook is
+one more business file, supplied separately; it is kept in `tabular/` (Git-ignored: it holds customer names and phones).
 
 ## Structured-data sanity
 
@@ -48,28 +52,39 @@ There are 175 non-OS-metadata files. Ignore `.DS_Store` when reconciling busines
 | Multiple delivery rows per composite order key | 0 | Current export provides at most one event; cannot infer a complete attempt history |
 | Duplicate driver-name groups | 6 | Driver names are not reliable unique identifiers |
 | Delivery outcomes | 21,865 delivered; 2,177 failed atte mpts; 760 returned | Outcomes are not equivalent to complaint counts |
-| Orders before supplied rate-card effective date | 17,195 | Earlier pricing unsupported without clarification; Q03 |
+| Orders before supplied rate-card effective date | 17,195 | **Client answered (Q06, 16 Nov):** no earlier card exists; apply the April card to all orders, labelled "applied retrospectively, per client" |
 | Explicit zone/service-tier columns | Not present in supplied SQL tables | Do not infer a business mapping without an agreed rule; Q04 |
 
 ## GPS and image coverage
 
 - All 60,000 GPS records have valid latitude/longitude ranges and non-negative speeds. Their 40 distinct driver codes match the supplied driver codes. This is an integrity check, not proof of delivery/location relevance.
 - Epoch timestamps span **30 Sep 2025 15:02:59 UTC–30 Jun 2026 06:56:48 UTC**. Confirm source semantics and align driver/time windows before applying any offset; Q06.
-- POD filename keys match orders but all 80 are labelled v1. No v2-labelled PODs were found. Absence from this export is not proof that delivery did not occur; Q05.
-- The rate card starts 1 April 2026 and says it supersedes previous cards. Do not apply it retroactively to earlier orders without authority. No prior card was found.
+- POD filename keys match orders but all 80 are labelled v1. No v2-labelled PODs were found. Absence from this export is not proof that delivery did not occur. **Client answered (Q04, 16 Nov):** these 80 scans are all there is; for orders after 1 Feb the app says exactly "no POD on file".
+- The rate card starts 1 April 2026 and says it supersedes previous cards. No prior card was found. **Client answered (Q06, 16 Nov):** no earlier card exists; apply the April card to all orders, labelled "applied retrospectively, per client".
 
 ## Open work before full audit sign-off
 
 - [ ] B reproduce counts in native MySQL; all five verify their own setup.
-- [ ] A/B review the visual and extraction results below, validate OCR uncertainty and test image-to-order links beyond filenames.
-- [ ] A/B resolve email identities and record ambiguity and cross-source coverage.
+- [x] A reviewed the visual and extraction results, validated OCR uncertainty and tested image-to-order links beyond
+      filenames: card order ref, date/time, driver, postal code and block match SQL 80/80; rate card 12/12 prices;
+      doubtful fields flagged for an eye check (16 Nov; A3, A4, `Ralph_2026-11-16-A-tools-evidence-limits.md`).
+      B review is optional while A's evidence stays file-backed (database design, 16 Nov).
+- [x] A recorded email ambiguity and cross-source coverage: 47 ambiguous, 21 only v1, 2 only v2, 12 impossible;
+      1 of 82 complaint numbers has a POD scan; 73 of 79 senders appear in the Case Log with an Order Ref (A2, A5).
+- [ ] B resolve the final v1/v2 order for each email in the order lookup.
 - [ ] B check GPS duplicates, timezone alignment, sparse coverage and order/delivery status consistency.
 - [ ] B investigate postal-code semantic issues without inventing replacement values.
-- [ ] A/B audit case log and Resolution Guide when supplied; audit any additional rates/rules received.
+- [x] A audited the Resolution Guide when supplied: tab of the client workbook, v2 dated 2 Mar 2026, 9 rules + 3
+      notes, each parsed and cited by sheet and row; the client's rate rules (Q03, Q06, Q07, Q08) applied in A's rate
+      lookup (17 Nov, PR #11, `Ralph_2026-11-17-guide-and-client-answers.md`).
+- [ ] B audit the Case Log tab (505 rows × 16 columns): duplicates, contacts, order refs, dates.
 - [ ] B reconcile cleaned/loaded/rejected/duplicate counts and repeated-load behaviour.
 - [ ] C/E turn confirmed traps into checkable evals; owners verify expected answers.
 
-See [package checklist](package_checklist.md), [trap list](trap_list.md) and [client Q&A](../00-Biz_Requirements/client_qa.md). Client questions are drafted, not sent or answered.
+See [package reconciliation](package_reconciliation_2026-11-16.md), [trap list](trap_list_2026-11-16.md) and
+[client Q&A](../00-Biz_Requirements/client_qa_v02.xlsx). **Client questions were sent by John on 16 Nov, 6:42 PM and
+answered by the client the same evening, 8:00 PM (Q01–Q08).** Each reply is logged in the client Q&A sheet.
+
 ## Detailed unstructured-source audit
 
 Sections: **A — Unstructured sources** (below) · structured-source sanity checks above; B's full audit remains open.
@@ -93,7 +108,8 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
 | `docs/complaint_emails/*.txt` | 90 emails | **90** | 90 | All UTF-8, 248–312 bytes. All 4 headers (`From`, `To`, `Date`, `Subject`) present and parseable in every file |
 | `images/proof_of_delivery/*.jpg` | 80 scans | **80** | 80 | All 80 readable by eye. No field unreadable. JPG, 30–60 KB |
 | `images/rate_cards/*.jpg` | "rate cards" (no count) | **1** | 1 | `rate_card_apr2026.jpg`, readable |
-| Resolution Guide (policy) | inside `tabular/` | **0** | — | **Missing**: no `tabular/` folder in the zip (see package checklist) |
+| Resolution Guide (policy) | inside `tabular/` | **1** (sent separately) | 1 | Not in the zip. Arrived 16 Nov, 8:00 PM as tab "Resolution Guide" of `CS_case_log_Oct25-Jun26.xlsx` (client Q01/Q02): v2, 2 Mar 2026, 9 rules + 3 notes, all parsed; each cited by sheet and row |
+| Case Log (same workbook) | inside `tabular/` | **1** tab (sent separately) | 1 | 505 rows × 16 columns; holds customer names and phones. Opened and counted by A on 17 Nov; content audit is B's |
 | `BRIEFING_team2_merlion_express.pdf` (zip root) | not in manifest | 1 | 1 | 2 pages. Byte-identical to `docs/00-Biz_Requirements/` copy |
 | `CLIENT_BRIEF.md` (zip root) | not in manifest | 1 | 1 | Identical to `docs/00-Biz_Requirements/CLIENT_BRIEF.md` |
 
@@ -115,7 +131,7 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
 
 | Check | Result |
 |---|---|
-| System | **All 80 are v1** (`POD_v1_<order>.jpg`). **0 POD scans for v2 orders** |
+| System | **All 80 are v1** (`POD_v1_<order>.jpg`). **0 POD scans for v2 orders.** Client (Q04): these 80 are all there is; for orders after 1 Feb say exactly "no POD on file" |
 | Card dates | 02/10/2025 → 01/12/2025 (order dates 2025-10-01 → 2025-11-28). **No overlap with the complaint period (Mar–Jun 2026)** |
 | Order ref vs file name | 80/80 match |
 | Card vs SQL (v1) | Order exists 80/80. **Date/time equals `deliveries.delivered_time` to the minute 80/80.** Driver equals driver code 80/80. Postal code equals `orders.postal_code` 80/80. Block equals SQL address block 80/80 |
@@ -132,11 +148,11 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
 
 | Check | Result |
 |---|---|
-| Validity | "STANDARD RATE CARD — EFFECTIVE 1 APRIL 2026 (supersedes all previous)". **No earlier card in the package.** v1 orders (Oct 2025–Jan 2026), v2 Feb–Mar 2026 and the 20 March complaints all predate it |
+| Validity | "STANDARD RATE CARD — EFFECTIVE 1 APRIL 2026 (supersedes all previous)". **No earlier card in the package.** v1 orders (Oct 2025–Jan 2026), v2 Feb–Mar 2026 and the 20 March complaints all predate it. **Client (Q06):** no earlier card exists; apply this card to all orders, labelled "applied retrospectively, per client" |
 | Structure | 4 zones (Central · East/North-East · North/West · Sentosa/Jurong Island) × 3 weight bands (≤3 kg · 3–10 kg · 10–25 kg) + same-day surcharge column, plus a "CBD ERP hours (0730–1900)" surcharge row |
 | Notes on card | COD handling 1.5% (min $2.00) · re-attempt $3.00 from 3rd attempt · no standard delivery on public holidays, express PH = 2× standard · rates before GST (9%) · corporate rebate 5% above 2,000 parcels/month · Sentosa same-day "not available" |
-| Boundaries | **Bands overlap at 3 kg and 10 kg.** SQL has 13 orders at exactly 3.00 kg and 7 at exactly 10.00 kg. Max weight in SQL 24.0 kg (none above 25 kg) |
-| Inputs it needs | **Zone and service type (standard/same-day) are not columns in `orders`.** No postal-code → zone mapping in the package |
+| Boundaries | **Bands overlap at 3 kg and 10 kg.** SQL has 13 orders at exactly 3.00 kg and 7 at exactly 10.00 kg. Max weight in SQL 24.0 kg (none above 25 kg). **Client (Q07):** the upper limit is inclusive: 3 kg → ≤3 band, 10 kg → 3–10, 25 kg → 10–25 |
+| Inputs it needs | **Zone and service type (standard/same-day) are not columns in `orders`.** No postal-code → zone mapping in the package. **Client:** zone comes from the town in the delivery address, and the 5 ops zones group into the card's rate zones (Q03); every order is standard delivery (Q08) |
 | Scan quality | Slight rotation, coffee-ring stains near values; every value legible |
 
 ### A5. Cross-source linkage (emails ↔ POD ↔ SQL)
@@ -158,9 +174,9 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
   `docs/03-Handoffs/Ralph_2026-11-16-email-parser.md`). Output is unmasked; **masking is B/C/D's job** (John,
   16 Nov) — phone numbers and sender addresses must be hidden before any LLM call or customer reply.
 - POD: extract fields with the class vision endpoint, validate against SQL (all 80 should match). Record uncertainty
-  and keep the image path as the citation.
+  and keep the image path as the citation. **Done 16 Nov: 80/80 match on every key field.**
 - Rate card: extract once into a versioned table (`effective_from` 2026-04-01), with explicit band-boundary rules
-  once the client answers.
+  once the client answers. **Done: extracted 16 Nov (12/12 prices); client rules Q03/Q06/Q07/Q08 applied 17 Nov.**
 - Policy search: ~~blocked until the Resolution Guide arrives~~ — **guide received 16 Nov** (client Q01/Q02) and
   parsed 17 Nov: 9 rules + 3 notes, each cited `sheet:Resolution Guide|row:<n>`.
 - **Status 16 Nov:** POD + rate-card extraction, cache, SQL validation, `search_emails` / `search_policy` and 12
@@ -169,3 +185,6 @@ parsed by script (headers, order numbers, templates). Every extracted value was 
   `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md` and `docs/04-Testing_Evals/api_spend.md`.
 - **Status 17 Nov:** client answers applied (guide, Q03/Q04/Q06/Q07/Q08); 18/18 A evals pass; no new spend. See
   `docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`.
+- **Status 17 Nov (afternoon):** search is now keyword + FAISS vector index (team decision, 17 Nov meeting), 21/21
+  A evals pass. See PR #13 and `docs/03-Handoffs/Ralph_2026-11-17-vector-index.md` (visible on `main` once #13 is
+  merged).

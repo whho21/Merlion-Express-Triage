@@ -1,0 +1,5 @@
+# Optional: only for A's vector search (backend/unstructured/vector_index.py).
+# Everything else in backend/unstructured uses the Python standard library; without these, search falls back to
+# keyword ranking and says so in the result's "retrieval" field.
+faiss-cpu>=1.8
+numpy>=1.26
