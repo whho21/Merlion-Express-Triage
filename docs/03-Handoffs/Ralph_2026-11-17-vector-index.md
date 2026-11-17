@@ -115,12 +115,21 @@ database raised a raw `ValueError` inside `search`. Both are validated when the 
 
 - Checked against the real data: the guard output for all 102 indexed chunks and 26 sample questions is unchanged
   except the three greeting cases, so rankings and evals (21/21) are the same as before.
+- **Stress test (every real name and street, 3 casings, 10 contexts):** 526 distinct names × 3 casings × 10 contexts
+  (bare, "Customer:", "Hi X,", "Regards,", "Dear", "Mr", "my name is", mid-sentence, with an address) = 15,780 cases,
+  **0 leaks**; 200 distinct streets × 3 casings × 4 contexts = 2,400 cases, **0 leaks**; all 25,833 full addresses
+  × 3 casings, **0 leaks**; 37 complaint questions × 4 casings (incl. Title Case Every Word), **0 over-masked**. The
+  first run found lower-case unnumbered streets ("bedok central", "bishan st 11") and "clara de silva" leaking, and
+  "Sim Card Missing" / "3 Kg Band" over-masked; fixed with a town list (a town word + street suffix is an address in
+  any casing; a town alone is not, so zone questions still work), "suffix + number" and "blk … unit" context rules,
+  name particles (de/da/van), and short-syllable limits on surname-first names. Script: Ralph's session scratchpad
+  (`stress.py`), reads `data/sql/merlion_ops.sql` and the case log; rerun it after any guard change.
 - Index format is now `a-vec-3` (the guard changed, so embedded text could change). **Rerun
   `python -m backend.unstructured.build_index`** (free). Until then search says `keyword (fallback: INDEX_STALE)`.
 - Remaining limits (documented, not fixed): an unknown lower-case name with no cue ("zhi wei tan" all in lower case),
   and a typo'd capitalised two-word complaint that ends a greeting line ("Hi Lat Parcle" with nothing after it).
 
-Tests: 120 pass (14 new: 9 guard casing/greeting cases; 5 index: the greeting reaches the embedder, CAPS and
+Tests: 122 pass (16 new: 11 guard casing/greeting/stress cases; 5 index: the greeting reaches the embedder, CAPS and
 lower-case names never do, two bad-metadata fallbacks, local-index typo tolerance with a greeting).
 
 ## Team API key: out of credit (found 17 Nov)

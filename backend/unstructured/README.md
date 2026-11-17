@@ -21,7 +21,7 @@ pip install -r backend/unstructured/requirements.txt          # optional: faiss-
 python -m backend.unstructured.build_index                    # vector index (SQLite + FAISS); local embeddings, free
 python -m backend.unstructured.evals                          # A's 21 eval cases: PASS / FAIL / PENDING
 python -m backend.unstructured.ask                            # type a question, see the rule + emails and the search method
-python -m unittest discover -s backend/unstructured/tests -t .   # 120 unit tests, synthetic data, no network
+python -m unittest discover -s backend/unstructured/tests -t .   # 122 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).

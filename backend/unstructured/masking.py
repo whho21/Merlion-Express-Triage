@@ -20,7 +20,7 @@ MASK_RULES: List[Tuple[str, "re.Pattern[str]", str]] = [
     # Singapore numbers: 8 digits starting 3/6/8/9, optional +65 and one space/dash in the middle.
     ("phone", re.compile(r"(?<![\w$])(?:\+65[\s-]?)?[3689]\d{3}[\s-]?\d{4}(?!\d)"), "[PHONE]"),
     ("unit", re.compile(r"#\s?\d{1,3}-\d{1,5}[A-Z]?\b"), "[UNIT]"),
-    ("postal", re.compile(r"(?<![\w$])(?:S(?:ingapore)?\s?)?\d{6}(?!\d)"), "[POSTAL]"),
+    ("postal", re.compile(r"(?<![\w$])(?:(?:S|(?i:singapore))\s?)?\d{6}(?!\d)"), "[POSTAL]"),
     ("block", re.compile(r"\b(?:blk|block)\s*\d{1,4}[A-Z]?\b", re.I), "blk [BLOCK]"),
 ]
 
@@ -80,13 +80,17 @@ _NOT_NAME = (
     "door|neighbour|neighbor|received|receive|never|week|month|day|days|time|times|fee|fees|payment|paid|pay|"
     "invoice|receipt|tracking|track|number|ref|reference|merchant|customer|customers|service|services|support|cs|"
     "public|holiday|weight|kg|zone|zones|central|north|south|east|west|singapore|merlion|express|cbd|gps|nric|sg|"
-    "sgd|usd|asap|fyi|id|pm|hdb|mrt|pdpa|api|faq|eta|tbc|tba|na|drv|merl|name|email|phone|postal")
+    "sgd|usd|asap|fyi|id|pm|hdb|mrt|pdpa|api|faq|eta|tbc|tba|na|drv|merl|name|email|phone|postal|card|quality|"
+    "packaging|battery|priority|cost|level|price|prices|band|limit|box|boxes")
 _NOT_NAME_LA = rf"(?!(?i:{_NOT_NAME})\b)"
 _NAMEWORD = rf"{_NOT_NAME_LA}(?:{_NW}|{_NWU})"   # Title or CAPS, not an excluded word
 _LNAME = rf"{_NOT_NAME_LA}{_NWL}"                 # lower case, not an excluded word
 _ANYNAME = rf"{_NOT_NAME_LA}{_WORD}"              # any casing, not an excluded word
 _CAPSNAME = rf"{_NOT_NAME_LA}{_NWU}"
 _SHORTLOW = rf"{_NOT_NAME_LA}[a-z]{{2,6}}\b"      # a lower-case Chinese given-name syllable: mei, ling, kuan, yew
+_SHORTCAPS = rf"{_NOT_NAME_LA}[A-Z]{{2,6}}\b"     # the same in CAPS: MEI, LING, AH, KOW
+_SHORTTITLE = rf"{_NOT_NAME_LA}[A-Z][a-z]{{1,5}}(?:-[A-Z]?[a-z]{{1,5}})?\b"  # Mei, Ling, Guo, Hwee, Mei-Ling
+_PARTICLE = r"(?i:de|da|del|dos|van|von)"         # "Clara de Silva"
 
 # Words that may precede a street suffix but are not part of a street name (case-insensitive). Directions
 # ("Bedok North Drive") and "Central" are street words, so they are NOT in this list.
@@ -110,6 +114,24 @@ _SUFFIX_U = (r"DRIVE|LANE|CLOSE|WALK|WAY|PLACE|TERRACE|LINK|RISE|LOOP|CIRCLE|GRO
              r"CENTRAL|GARDENS?|ESTATE|GREEN|VALE|ST|PL|LN|SQ|DR(?=[ \t]+\d)")
 _SUFFIX_ANY = (r"drive|lane|close|walk|way|place|terrace|link|rise|loop|circle|grove|heights|hill|park|view|quay|square|"
                r"central|gardens?|estate|green|vale|st|pl|ln|sq|dr(?=[ \t]+\d|[ \t]*$|[.,;:)])")
+_SUFFIX_ALL = (r"road|rd|street|avenue|ave|crescent|cres|boulevard|blvd|drive|lane|close|walk|way|place|terrace|link|"
+               r"rise|loop|circle|grove|heights|hill|park|view|quay|square|central|gardens?|estate|green|vale|st|pl|ln|"
+               r"sq|dr")
+# Singapore towns and estates (the 19 in the client data plus the other HDB towns). A town word followed by a street
+# suffix is an address whatever the casing: "bedok central", "toa payoh st 11". A town alone ("Bedok") is left, so
+# zone questions still work.
+_TOWN = ("Ang Mo Kio|Bedok|Bishan|Bukit Batok|Bukit Merah|Bukit Panjang|Bukit Timah|Choa Chu Kang|Clementi|Geylang|"
+         "Hougang|Jurong East|Jurong West|Jurong|Kallang|Marine Parade|Pasir Ris|Punggol|Queenstown|Sembawang|Sengkang|"
+         "Serangoon|Tampines|Toa Payoh|Woodlands|Yishun|Novena|Tanglin|Orchard|Tengah|Boon Lay|Bukit Gombak|"
+         "Telok Blangah|Tiong Bahru|Whampoa|Balestier|Redhill|Potong Pasir|Macpherson|Ubi|Eunos|Kembangan|"
+         "Bedok Reservoir|Simei|Changi|Loyang|Compassvale|Rivervale|Anchorvale|Fernvale|Buangkok|Kovan|Upper Thomson|"
+         "Thomson|Sin Ming|Marsiling|Admiralty|Canberra|Khatib|Chong Pang|Teck Whye|Yew Tee|Keat Hong|Taman Jurong|"
+         "Ghim Moh|Buona Vista|Kent Ridge|Pasir Panjang|Havelock|Kim Tian|Boon Keng|Bugis|Rochor|Kallang Bahru|"
+         "Aljunied|Paya Lebar|Tai Seng|Bartley|Yio Chu Kang|Lentor|Mayflower|Springleaf|Woodleigh|Marymount|Braddell|"
+         "Caldecott|Punggol Field|Sengkang East|Sengkang West|Tampines North|Woodlands South|Yishun Ring|Siglap|Katong|"
+         "Joo Chiat|Mountbatten|Dakota|Stadium|Nicoll|Beach|Shenton|Raffles|Cantonment|Outram|Chinatown|Clarke Quay|"
+         "Boat Quay|Robertson Quay|River Valley|Newton|Stevens|Botanic|Farrer Park|Little India|Kampong Glam")
+_TOWN_WORDS = tuple(sorted({w for t in _TOWN.split("|") for w in t.split()}, key=str.lower))
 
 _GIVEN = (  # common given names in Singapore; English words that are also names (May, Will, Grace ...) left out
     "Aaron|Abdul|Adam|Adrian|Agnes|Ahmad|Aisyah|Alan|Alex|Alexander|Alice|Alicia|Alvin|Amanda|Amir|Aminah|Amy|Anand|"
@@ -156,7 +178,7 @@ GUARD_RULES: List[Tuple[str, Pattern[str], str]] = [
     # Street names. Run before the name-list rules so "Ang Mo Kio Ave 3" is an address, not a surname.
     ("address", re.compile(rf"\b(?i:jalan|lorong|jln)[ \t]+(?:\d{{1,3}}[A-Za-z]?[ \t]+)?{_STREET_WORD_ANY}"
                            rf"(?:[ \t]+{_STREET_WORD_ANY}){{0,2}}"
-                           rf"|\b(?:Lor|LOR|Lengkok|LENGKOK|Lengkong|LENGKONG|Kampong|KAMPONG|Kg|KG)[ \t]+"
+                           rf"|(?<!\d[ \t])\b(?:Lor|LOR|Lengkok|LENGKOK|Lengkong|LENGKONG|Kampong|KAMPONG|Kg|KG)[ \t]+"
                            rf"(?:\d{{1,3}}[A-Za-z]?[ \t]+)?(?:{_STREET_WORD_TITLE}|{_STREET_WORD_CAPS})"
                            rf"(?:[ \t]+(?:{_STREET_WORD_TITLE}|{_STREET_WORD_CAPS})){{0,2}}"), "[ADDRESS]"),
     ("address", re.compile(rf"\b(?:\d{{1,4}}[A-Za-z]?[ \t]+)?(?:{_STREET_WORD_ANY}[ \t]+){{1,4}}"
@@ -170,6 +192,18 @@ GUARD_RULES: List[Tuple[str, Pattern[str], str]] = [
                            rf"(?:[ \t]+\d{{1,3}}[A-Za-z]?\b)?"
                            rf"|\b(?:\d{{1,4}}[A-Za-z]?[ \t]+)?(?:{_STREET_WORD_CAPS}[ \t]+){{1,4}}(?:{_SUFFIX_U})\b\.?"
                            rf"(?:[ \t]+\d{{1,3}}[A-Za-z]?\b)?"), "[ADDRESS]"),
+    # A known town followed by a street suffix, any casing: "bedok central", "TOA PAYOH ST 11", "bukit batok drive".
+    ("address", re.compile(rf"\b(?i:{_TOWN})\b(?:[ \t]+{_STREET_WORD_ANY}){{0,2}}[ \t]+(?i:{_SUFFIX_ALL})\b\.?"
+                           rf"(?:[ \t]+\d{{1,3}}[A-Za-z]?\b)?"), "[ADDRESS]"),
+    # A street suffix followed by its number is an address in any casing: "bedok st 11", "clementi ave 4", "yishun dr 1".
+    ("address", re.compile(rf"\b(?:{_STREET_WORD_ANY}[ \t]+){{1,4}}(?i:st|street|ave|avenue|dr|drive|rd|road|lane|ln|"
+                           rf"walk|link|close|cres|crescent)[ \t]+\d{{1,3}}[A-Za-z]?\b"), "[ADDRESS]"),
+    # Words between a masked block number and a street suffix, or before a masked unit / postal code, any casing:
+    # "blk [BLOCK] bedok drive [UNIT]".
+    ("address", re.compile(rf"(\[BLOCK\][ \t]+)(?:{_STREET_WORD_ANY}[ \t]+){{1,4}}(?i:{_SUFFIX_ALL})\b\.?"
+                           rf"(?:[ \t]+\d{{1,3}}[A-Za-z]?\b)?"), r"\1[ADDRESS]"),
+    ("address", re.compile(rf"\b(?:\d{{1,4}}[A-Za-z]?[ \t]+)?(?:{_STREET_WORD_ANY}[ \t]+){{1,4}}(?i:{_SUFFIX_ALL})\b\.?"
+                           rf"(?:[ \t]+\d{{1,3}}[A-Za-z]?\b)?(?=[ \t]*(?:#|\[UNIT\]|\[POSTAL\]))"), "[ADDRESS]"),
     # Field cues: the strongest signal, so any casing is taken, up to 4 words: "my name is jane tan", "Customer: JANE
     # TAN", "From: Daniel Souza", "Name: tan ah kow".
     ("name", re.compile(rf"(\b(?i:my name is|my name's|name is|name\s*:|customer\s*:|recipient\s*:|consignee\s*:|"
@@ -189,19 +223,22 @@ GUARD_RULES: List[Tuple[str, Pattern[str], str]] = [
      r"\1[NAME]"),
     # Title-case word(s) before a known surname or family name, plus any name words after: "Xavier Lim",
     # "Kavitha Subramaniam", "Lim Jane Tan". Before the given-name rule so the whole name goes in one piece.
-    ("name", re.compile(rf"\b{_NAMEWORD}(?:[ \t]+{_NAMEWORD}){{0,2}}[ \t]+(?:{_SURNAME}|{_FAMILY})\b"
+    ("name", re.compile(rf"\b{_NAMEWORD}(?:[ \t]+(?:{_NAMEWORD}|{_PARTICLE})){{0,2}}[ \t]+(?:{_SURNAME}|{_FAMILY})\b"
                         rf"(?:[ \t]+{_NAMEWORD}){{0,2}}"), "[NAME]"),
     # Known given name, plus any name words after it: "Jane", "Jane Tan", "Jane tan", "Muhammad Hafiz", "Ryan D".
-    ("name", re.compile(rf"\b(?:{_GIVEN})\b(?:[ \t]+(?:{_NAMEWORD}|{_KNOWN_I})){{0,3}}(?:[ \t]+{_INITIAL})?"), "[NAME]"),
+    ("name", re.compile(rf"\b(?:{_GIVEN})\b(?:[ \t]+(?:{_NAMEWORD}|{_KNOWN_I}|{_PARTICLE}[ \t]+{_KNOWN_I})){{0,3}}"
+                        rf"(?:[ \t]+{_INITIAL})?"), "[NAME]"),
     # Chinese order, surname first: "Tan Mei Ling", "Ng Chee Keong".
-    ("name", re.compile(rf"\b(?:{_SURNAME})[ \t]+{_NAMEWORD}(?:[ \t]+{_NAMEWORD}){{0,2}}"), "[NAME]"),
+    ("name", re.compile(rf"\b(?:{_SURNAME})[ \t]+(?:{_KNOWN_I}|{_SHORTTITLE})(?:[ \t]+(?:{_KNOWN_I}|{_SHORTTITLE})){{0,2}}"),
+     "[NAME]"),
     # ALL CAPS: "ZHI WEI TAN", "JANE TAN", "TAN AH KOW"; lower case: "jane tan", "tan mei ling", "lim jane".
     ("name", re.compile(rf"\b{_CAPSNAME}(?:[ \t]+{_CAPSNAME}){{0,2}}[ \t]+(?i:{_SURNAME}|{_FAMILY})\b"
                         rf"(?:[ \t]+{_CAPSNAME}){{0,2}}"), "[NAME]"),
     ("name", re.compile(rf"\b(?i:{_SURNAME})\b[ \t]+(?:(?i:{_GIVEN})\b(?:[ \t]+{_KNOWN_I}){{0,2}}"
                         rf"|{_SHORTLOW}[ \t]+{_SHORTLOW}(?:[ \t]+{_SHORTLOW})?"
-                        rf"|{_CAPSNAME}[ \t]+{_CAPSNAME}(?:[ \t]+{_CAPSNAME})?)"), "[NAME]"),
-    ("name", re.compile(rf"\b(?i:{_GIVEN})\b(?:[ \t]+(?:{_KNOWN_I}|{_CAPSNAME})){{0,3}}"), "[NAME]"),
+                        rf"|{_SHORTCAPS}[ \t]+{_SHORTCAPS}(?:[ \t]+{_SHORTCAPS})?)"), "[NAME]"),
+    ("name", re.compile(rf"\b(?i:{_GIVEN})\b(?:[ \t]+(?:{_KNOWN_I}|{_CAPSNAME}|{_PARTICLE}[ \t]+{_KNOWN_I})){{0,3}}"),
+     "[NAME]"),
 ]
 _RUNS = re.compile(r"\[(NAME|ADDRESS)\](?:[ \t]+\[\1\])+")
 

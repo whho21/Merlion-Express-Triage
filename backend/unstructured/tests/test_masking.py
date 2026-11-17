@@ -157,6 +157,26 @@ class PrivacyGuardCasingTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.check(text, text)
 
+    def test_stress_findings_lower_case_town_streets_and_name_particles(self):
+        """Found by running every real name and street through the guard in 3 casings (17 Nov evening)."""
+        cases = {"bedok central": "[ADDRESS]", "bishan st 11": "[ADDRESS]", "bukit batok drive": "[ADDRESS]",
+                 "parcel left at toa payoh st 21 yesterday": "parcel left at [ADDRESS] yesterday",
+                 "Blk 584 bedok drive #04-621": "blk [BLOCK] [ADDRESS] [UNIT]",
+                 "blk 916 tampines st 11 #15-29 singapore 462057": "blk [BLOCK] [ADDRESS] [UNIT] [POSTAL]",
+                 "clara de silva said the parcel was late": "[NAME] said the parcel was late",
+                 "Clara de Silva": "[NAME]", "Hi clara de silva,": "Hi [NAME],"}
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.check(text, expected)
+
+    def test_stress_findings_title_case_every_word_complaints_stay(self):
+        for text in ("Sim Card Missing From The Box", "Low Quality Packaging, Item Broke", "LOW QUALITY PACKAGING",
+                     "What Is The Weight Limit For The 3 Kg Band", "WHAT IS THE WEIGHT LIMIT FOR THE 3 KG BAND",
+                     "Parcel Delivered To The Wrong Block", "Driver Was Rude And Threw The Parcel",
+                     "complaints in bedok", "Bedok zone had most late deliveries"):
+            with self.subTest(text=text):
+                self.check(text, text)
+
     def test_guard_is_idempotent_on_every_new_form(self):
         for text in ("Customer: JANE TAN at 12 bedok north drive", "tan mei ling complained", "Regards, JOHN",
                      "Lim Jane Tan", "Hi Jane,", "ahmad bin yusof", "ZHI WEI TAN"):
