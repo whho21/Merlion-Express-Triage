@@ -18,7 +18,7 @@ Checkpoint 1 is **Fri 20 Nov, 17:00 SGT**; Checkpoint 2 remains **Mon 23 Nov, 09
 | 4 | Agree extraction/lookup/tool schemas with A/C; publish fixture and cleaned Mermaid ER | 17 Nov contracts; 20 Nov, 17:00 ER | ⏳ |
 | 5 | Build idempotent cleaned loaders and candidate lookup using system_version/order_id; preserve raw timestamps and postal text. *17 Nov: candidate-lookup ownership moved to C (RID item 20, merged as PR #17); B's remaining scope is loaders, weekly views and definitions.* | 18–23 Nov | ⏳ |
 | 6 | Expose cited delivery/POD/GPS/date-sensitive rate tools; use A sample for Friday image integration; do not infer missing rates/attempts | 20 Nov internal; 23 Nov, 09:00 checkpoint | ⏳ |
-| 7 | Implement weekly driver/zone aggregates only with approved case/time/dedup/zone definitions; expose unknowns and limitations | 23–24 Nov; client-dependent | ⏳ |
+| 7 | Implement weekly driver/zone aggregates only with approved case/time/dedup/zone definitions; expose unknowns and limitations. *17 Nov (night): C implemented the HTTP-04/05 exposure boundary with proposed definitions (Mon–Sun SGT by Date Opened, dedup via case groups, compliments excluded, zone from address town, guide gaps per Q02) in `backend/api_service/weekly.py` — confirm or amend these before your loaders land.* | 23–24 Nov; client-dependent | ⏳ |
 | 8 | Supply six checkable data/analytics cases, source-tool telemetry and independently verified totals; fix own failures | 24 Nov | ⏳ |
 | 9 | Compile one-page quality report including unresolved limitations and cleaning decisions from all owners | 26 Nov | ⏳ |
 

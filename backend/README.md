@@ -131,6 +131,6 @@ backend/
 
 Offline SQL/case/GPS preparation can start in a separate `api_service/prepare.py` command module; HTTP requests must not run ingestion or cleaning. MySQL DDL stays in `database/`, runtime data stays under ignored `data/` and `output/`, and shared startup stays in [`scripts/`](../scripts/README.md).
 
-The entry point is `uvicorn backend.api_service.app:app`. The three complaint/session routes and health exist; weekly routes and `rag_service/` remain planned. SQLite defaults to ignored `output/api/sessions.sqlite3`; `CAPSTONE_SESSION_DB` overrides the path. Recovery reads saved state without model/tool calls. See the [API catalog](../docs/02-Design/api-catalog_v0.9.0.md) for contracts.
+The entry point is `uvicorn backend.api_service.app:app`. The three complaint/session routes and health exist; weekly routes and `rag_service/` remain planned. SQLite defaults to ignored `output/api/sessions.sqlite3`; `CAPSTONE_SESSION_DB` overrides the path. Recovery reads saved state without model/tool calls. See the [API catalog](../docs/02-Design/api-catalog_v0.9.1.md) for contracts.
 
 After installing the development dependencies, run `python -m unittest discover -s backend/api_service/tests -v` and `python -m evals.complaint_api_starter`. The starter explicitly injects synthetic data; production startup never uses it. No API request runs ingestion or paid extraction.

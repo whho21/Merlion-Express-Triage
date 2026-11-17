@@ -4,7 +4,7 @@ Date: 17 Nov 2026 (SGT). Requested by Developer C. Implementation delegated to G
 
 ## Sources and scope
 
-Read `docs/02-Design/api-catalog_v0.9.0.md` sections 2–4, 6–8; `frontend-ui-contract-draft.md`; `contracts_2026-11-16.md`; and the 17 Nov API/mock, guide/client-answer, PR11-review and architecture handoffs. Existing FastAPI bootstrap is implemented; five domain routes were outstanding before this change.
+Read `docs/02-Design/api-catalog_v0.9.1.md` sections 2–4, 6–8; `frontend-ui-contract-draft.md`; `contracts_2026-11-16.md`; and the 17 Nov API/mock, guide/client-answer, PR11-review and architecture handoffs. Existing FastAPI bootstrap is implemented; five domain routes were outstanding before this change.
 
 This increment implements the three complaint/session routes. Weekly endpoints, B's case loaders/views, frontend profile fixes, optional semantic retrieval and paid model/extraction runs are outside this increment. Reuse A's file-backed tools. B owns live MySQL/candidate facts; define an injectable structured-tool boundary and report an unavailable implementation honestly. Never turn an unavailable lookup into a successful no-match. A SQL-dump validation helper is not a live MySQL tool.
 

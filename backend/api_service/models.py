@@ -130,6 +130,44 @@ class Message(BaseModel):
     text: str
 
 
+class WeeklyPeriod(BaseModel):
+    week_start: str
+    week_end: str
+    timezone: str
+
+
+class ZoneCategoryRow(BaseModel):
+    zone: str
+    values: list[int]
+
+
+class ZoneCategory(BaseModel):
+    zones: list[str]
+    categories: list[str]
+    rows: list[ZoneCategoryRow]
+
+
+class TrendPoint(BaseModel):
+    week_start: str
+    total: int
+    by_zone: dict[str, int]
+
+
+class WeeklyResult(BaseModel):
+    """Contract per frontend contract §3 and catalog §3.4; nullable metrics stay null."""
+    period: WeeklyPeriod
+    definitions: list[list[str]]
+    totals: dict[str, int | float | None]
+    by_zone: list[dict[str, object]]
+    by_driver: list[dict[str, object]]
+    by_category: list[dict[str, object]]
+    by_resolution: list[dict[str, object]]
+    zone_category: ZoneCategory
+    trend: list[TrendPoint]
+    limitations: list[str] = Field(default_factory=list)
+    citations: list[Citation] = Field(default_factory=list)
+
+
 class ComplaintResult(BaseModel):
     request_id: str
     session_id: str | None

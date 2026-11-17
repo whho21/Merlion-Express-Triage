@@ -4,7 +4,7 @@ Developer B (Jenn Fang) owns the structured lookup (team plan v0.5, task 5); thi
 module is a reviewed reference implementation she can adopt, own and extend.
 It implements the injectable provider contract recorded in
 docs/03-Handoffs/John_2026-11-17-complaint-session-api.md ("B -> C structured-
-provider integration") and TOOL-05 in docs/02-Design/api-catalog_v0.9.0.md.
+provider integration") and TOOL-05 in docs/02-Design/api-catalog_v0.9.1.md.
 
 Contract summary:
 - `resolve(text)`: extract order references from the complaint text and return
