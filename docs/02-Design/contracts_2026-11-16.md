@@ -34,9 +34,10 @@ Producer and consumer review a synthetic example and failure case, record the ag
 
 **Proposed by:** Ralph (Developer A). **Status:** **agreed by B (Jenn) and C (John) at the 17 Nov, 2 PM sync.**
 Later changes go through a PR with a note here. Section 4 matches the email parser in `backend/unstructured/` (16 Nov).
-**Consumers:** C (search tools and lookups, final-answer citation checks). **B: none for now** — agreed 17 Nov: A's
-records stay file-backed behind A's tools (database design, 16 Nov); loading POD/rate records into MySQL is a later,
-optional item.
+**Consumers:** **B (Jenn)** — `get_pod` and `get_rate` read A's POD and rate-card files through A's `pod.find_pod` and
+`ratecard.lookup_rate` (team plan v0.5 §4 B; B task 6). **C (John)** — `search_emails` / `search_policy`, calls B's
+tools, and checks final-answer citations. Agreed 17 Nov: A's records stay files for now (database design, 16 Nov);
+loading them into MySQL is a later, optional item.
 All samples are **synthetic**: no client data.
 
 ### 1. Citation (shared by every A tool)
@@ -60,7 +61,7 @@ Follows the team plan's citation shape, with A's locators filled in.
 | `document` (email) | `email:<file stem>` | email path | `header:<name>` or `body:char:<start>-<end>` |
 | `document` (policy) | `policy:<workbook stem>:resolution_guide` | workbook path | `sheet:Resolution Guide\|row:<n>` (guide arrived as an Excel tab, 16 Nov) |
 
-### 2. POD extraction record (A produces; file-backed, B may load later)
+### 2. POD extraction record (A produces, B reads for get_pod)
 
 Built by `python -m backend.unstructured.extract_images` → `output/unstructured/pod_records.jsonl` (git-ignored,
 unmasked). Synthetic sample:
@@ -115,7 +116,7 @@ Rules:
   call failed — `extraction.error` says why). Every image gets a record and an `image_manifest.json` entry.
 - `pod.find_pod(records, source_system, order_id)` returns `not_found` for a v2 order — a v1 card is never reused (T-A05).
 
-### 3. Rate card record (A produces; file-backed, B may load later)
+### 3. Rate card record (A produces, B reads for get_rate)
 
 Built by the same command → `output/unstructured/rate_cards.jsonl`. Synthetic prices:
 
