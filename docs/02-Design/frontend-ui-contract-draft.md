@@ -1,6 +1,6 @@
 # Frontend consumer contract — DRAFT (D → C)
 
-**Proposed by:** Jeffrey (D). **Reviewer:** John (C); Jenn (B) for the weekly section. **Status:** proposal for the 17 Nov sync, not frozen.
+**Proposed by:** Jeffrey (D). **Reviewer:** John (C); Jenn (B) for the weekly section. **Status:** **HTTP-01–03/06 parts agreed by C 17 Nov 2026 (SGT); weekly (§3) stays proposed until B's definitions land.**
 **Date:** 17 Nov 2026 (SGT).
 
 `contracts_2026-11-16.md` says route paths and JSON schemas are C's decision. This file records **what the React UI currently expects**, so C can confirm, rename or reject fields. If C changes a name, only `frontend/src/api/client.js` (and the mock fixtures) need editing.
@@ -89,3 +89,20 @@ Zones are the five ops zones (North, North-East, East, Central, West) plus `Unkn
 3. C: session IDs — returned on first response and kept in the browser (`localStorage`) for restart recovery. OK?
 4. B: confirm weekly definitions (week boundary SGT Mon–Sun by date opened; duplicate rule; compliments excluded; zone from address).
 5. B: which `guide_gaps` checks are feasible by 23–24 Nov (e.g. refund > $50 without PN approval; refunded claimed COD figure)?
+
+## 5. C responses — contract decision, 17 Nov 2026 (SGT)
+
+Checked against the implemented source (`backend/api_service/`), not just the documents. HTTP-01/02/03 and health are **agreed and frozen as proposed**; see the [complaint/session handoff](../03-Handoffs/John_2026-11-17-complaint-session-api.md) and the [TOOL-05 handoff](../03-Handoffs/John_2026-11-17-tool05-sql-provider.md).
+
+1. **§4.1 — paths and status handling: accepted as-is.** `POST /api/complaints`, `POST /api/sessions/{session_id}/messages`, `GET /api/sessions/{session_id}` and `GET /api/health` are implemented exactly as drafted, including the `email_text` body field, the six-value `status` enum and `Error{code, message, retryable}`. HTTP status for transport errors plus body `status` for domain outcome is confirmed; `HTTP 200 + status: failed` is allowed and must enter the error flow honouring `error.retryable`. **Weekly paths (§1 rows for HTTP-04/05) remain proposed, not frozen**, until B's definitions land.
+2. **§4.2 — display-ready evidence: accepted.** `evidence[].summary` and `facts: [label, value][]` arrive display-ready and are validated server-side before response; the UI never formats raw tool output. Known personal fields are withheld server-side; the UI does not unmask or re-mask (§2 rule 4 unchanged).
+3. **§4.3 — session ID in `localStorage`: accepted.** Recovery (`HTTP-03`) returns the identical saved result with a fresh `request_id` and `recovered: true`, verified against a real server stop/restart on 17 Nov. The browser keeps only the last session ID.
+
+Deltas to record against the draft:
+
+- **`evidence[].status` superset:** the implementation also allows `ambiguous` alongside `found | not_found | partial | failed`. Render it as a banner-level uncertainty state or treat as `partial`; either is acceptable.
+- **`messages` field:** optionally present on recovery responses only (`[{role, text}]`, sanitised turn markers). Triage screens should ignore it.
+- **Live data context:** candidates for HTTP-01/02 now resolve against live MySQL through C's TOOL-05 provider (11,499 shared v1/v2 order IDs make unqualified numbers ambiguous by design). Until D's per-feature demo/live profiles land, keep labelling per §7 of `api-catalog_v0.9.0.md` — demo profile may use fixtures; a configured live endpoint's responses must be labelled real.
+- **Error shape note:** body-level `error` is `null` on normal outcomes and non-null for `failed`; the catalog §3.2 HTTP mappings (422/404/409/503/504/500) are implemented.
+
+Weekly (§3): deferred to B — see §4.4–4.5. C will implement HTTP-04/05 to this shape once Jenn confirms the counting definitions.
