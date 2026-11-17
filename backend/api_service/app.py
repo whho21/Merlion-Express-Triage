@@ -16,9 +16,10 @@ from fastapi.responses import JSONResponse
 
 from backend.unstructured.emails import classify
 from .evidence import EvidenceService
-from .models import ComplaintRequest, ComplaintResult, MessageRequest
+from .models import ComplaintRequest, ComplaintResult, MessageRequest, WeeklyResult
 from .service import BoundedCalls, DependencyError, UnavailableProvider, initial, new_id, order_references, refusal, request_trace, session_trace, validate_source
 from .store import SessionStore
+from .weekly import UnavailableWeeklySource, WeeklyNotFound, WeeklyUnavailable, validate_week_start
 
 log = logging.getLogger('merlion.api')
 if not log.hasHandlers():
@@ -27,7 +28,7 @@ log.setLevel(logging.INFO)
 ID = re.compile(r'^sess-[0-9a-f]{32}$')
 
 
-def create_app(provider=None, db_path=None, timeout=5, evidence_service=None):
+def create_app(provider=None, db_path=None, timeout=5, evidence_service=None, weekly_source=None):
     if not 0 < timeout <= 15:
         raise ValueError("timeout must be between 0 and 15 seconds")
     provider = provider or UnavailableProvider()
@@ -42,6 +43,7 @@ def create_app(provider=None, db_path=None, timeout=5, evidence_service=None):
     app = FastAPI(title='Merlion Express API', version='0.2.0', lifespan=lifespan)
     app.state.provider, app.state.store = provider, store
     evidence_service = evidence_service or EvidenceService()
+    weekly_source = weekly_source or UnavailableWeeklySource()
     frontend_port = int(os.environ.get('CAPSTONE_FRONTEND_PORT', '5173'))
     app.add_middleware(CORSMiddleware, allow_origins=[f'http://127.0.0.1:{frontend_port}', f'http://localhost:{frontend_port}'], allow_methods=['GET', 'POST'], allow_headers=['Content-Type'])
 
@@ -96,7 +98,7 @@ def create_app(provider=None, db_path=None, timeout=5, evidence_service=None):
 
     @app.get('/api/health')
     def health():
-        return {'request_id': new_id('req'), 'service': 'merlion-express-api', 'status': 'degraded', 'features': {'triage': bool(getattr(provider, 'available', False)), 'weekly': False, 'sessions': True, 'semantic_retrieval': False}, 'limitations': ['Structured lookup requires a configured provider.', 'Weekly reporting and semantic retrieval are unavailable.']}
+        return {'request_id': new_id('req'), 'service': 'merlion-express-api', 'status': 'degraded', 'features': {'triage': bool(getattr(provider, 'available', False)), 'weekly': bool(getattr(weekly_source, 'available', False)), 'sessions': True, 'semantic_retrieval': False}, 'limitations': ['Structured lookup requires a configured provider.', 'Weekly reporting requires the reviewed aggregate source.']}
 
     @app.post('/api/complaints', response_model=ComplaintResult)
     def complaint(body: ComplaintRequest, request: Request):
@@ -196,6 +198,24 @@ def create_app(provider=None, db_path=None, timeout=5, evidence_service=None):
         if not store.update(session_id, state):
             return error(409, 'SESSION_CONFLICT', 'The session changed. Please retry.')
         return state['result']
+
+    @app.get('/api/weekly/weeks')
+    def weekly_weeks():
+        return {'weeks': weekly_source.weeks(), 'timezone': 'Asia/Singapore',
+                'synthetic': bool(getattr(weekly_source, 'synthetic', False))}
+
+    @app.get('/api/weekly', response_model=WeeklyResult)
+    def weekly(week_start: str):
+        try:
+            week_start = validate_week_start(week_start)
+        except ValueError:
+            return error(422, 'VALIDATION_ERROR', 'week_start must be a Monday as YYYY-MM-DD.')
+        try:
+            return weekly_source.result(week_start)
+        except WeeklyUnavailable as exc:
+            return error(503, 'DEPENDENCY_UNAVAILABLE', f'{exc} Weekly metrics stay null rather than invented zeros.', retryable=True)
+        except WeeklyNotFound:
+            return error(404, 'NO_DATA', 'No published coverage for this week.')
 
     return app
 

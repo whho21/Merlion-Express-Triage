@@ -130,8 +130,7 @@ class ApiTests(unittest.TestCase):
 
     def test_openapi_cors_and_isolation(self):
         paths = self.client.get('/openapi.json').json()['paths']
-        self.assertTrue({'/api/health','/api/complaints','/api/sessions/{session_id}','/api/sessions/{session_id}/messages'}.issubset(paths))
-        self.assertNotIn('/api/weekly', paths)
+        self.assertTrue({'/api/health','/api/complaints','/api/sessions/{session_id}','/api/sessions/{session_id}/messages','/api/weekly','/api/weekly/weeks'}.issubset(paths))
         good = self.client.get('/api/health', headers={'Origin':'http://localhost:5173'})
         self.assertEqual(good.headers.get('access-control-allow-origin'), 'http://localhost:5173')
         bad = self.client.get('/api/health', headers={'Origin':'https://unrelated.invalid'})
