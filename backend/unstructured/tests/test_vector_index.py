@@ -140,6 +140,37 @@ class VectorIndexTests(unittest.TestCase):
             self.assertNotIn(leak, sent)
         self.assertIn("parcel smashed", sent)
 
+    def test_greeting_before_complaint_text_still_reaches_the_embedder(self):  # PR #14 review P2
+        self.build()
+        emb = FakeEmbedder()
+        vector_index.load(self.out).search("Hi, Lat Parcle Apolgy", emb)
+        self.assertEqual(emb.calls[-1], ["Hi, Lat Parcle Apolgy"])
+
+    def test_caps_name_and_lower_case_address_never_reach_the_embedder(self):  # PR #14 review P1
+        self.build()
+        emb = FakeEmbedder()
+        vector_index.load(self.out).search("Customer: JANE TAN at 12 bedok north drive, parcel smashed", emb)
+        sent = " ".join(t for batch in emb.calls for t in batch)
+        for leak in ("JANE", "TAN", "bedok"):
+            self.assertNotIn(leak, sent)
+        self.assertIn("parcel smashed", sent)
+
+    def test_garbage_similarity_threshold_in_meta_falls_back(self):  # Copilot review on PR #14
+        self.build()
+        con = sqlite3.connect(vector_index.index_dir(self.out) / vector_index.DB_NAME)
+        con.execute("UPDATE meta SET value = 'high' WHERE key = 'min_similarity'")
+        con.commit()
+        con.close()
+        self.assertFallsBack("INDEX_CORRUPT")
+
+    def test_out_of_range_similarity_threshold_in_meta_falls_back(self):
+        self.build()
+        con = sqlite3.connect(vector_index.index_dir(self.out) / vector_index.DB_NAME)
+        con.execute("UPDATE meta SET value = '7' WHERE key = 'min_similarity'")
+        con.commit()
+        con.close()
+        self.assertFallsBack("INDEX_CORRUPT")
+
     def test_indexed_chunks_are_guarded_before_embedding(self):
         self.write([email("d", "20003", "late", "Late", "Regards, Priya Sharma, Blk 5 Tampines St 11. Parcel late.")],
                    RULES)
@@ -284,6 +315,14 @@ class LocalEmbeddingTests(unittest.TestCase):
         thrown = search.search_policy("parcel smashd thrwn", mode="vector", out_dir=self.out)
         self.assertEqual(thrown["data"][0]["heading"], "Damaged / thrown parcel")
         self.assertEqual(res["retrieval"], "vector:local-tfidf-chargram-v1")
+
+    def test_greeting_does_not_break_typo_tolerance(self):  # PR #14 review P2, John's repro with the local index
+        vector_index.build(self.out, model="local-tfidf-chargram-v1")
+        plain = search.search_policy("Lat Parcle Apolgy", mode="vector", out_dir=self.out)
+        greeted = search.search_policy("Hi, Lat Parcle Apolgy", mode="vector", out_dir=self.out)
+        self.assertEqual((greeted["status"], greeted["data"][0]["heading"]), ("found", "Late delivery"))
+        self.assertEqual(plain["data"][0]["heading"], "Late delivery")
+        self.assertAlmostEqual(greeted["data"][0]["score"], plain["data"][0]["score"], delta=0.03)  # "Hi, " only
 
     def test_unrelated_question_is_not_found(self):
         vector_index.build(self.out, model="local-tfidf-chargram-v1")

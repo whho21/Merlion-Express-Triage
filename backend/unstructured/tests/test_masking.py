@@ -86,5 +86,83 @@ class PrivacyGuardTests(unittest.TestCase):
         self.assertEqual(counts, {"phone": 1, "address": 1, "name": 1})
 
 
+class PrivacyGuardCasingTests(unittest.TestCase):
+    """PR #14 review (John + Copilot): P1 casing and name-length variations, P2 greetings before complaint text."""
+
+    def check(self, text, expected):
+        self.assertEqual(privacy_guard(text)[0], expected)
+
+    def test_p1_reviewer_repro_caps_name_and_lower_case_numbered_address(self):
+        self.check("Customer: JANE TAN at 12 bedok north drive", "Customer: [NAME] at [ADDRESS]")
+
+    def test_p1_names_in_any_casing(self):
+        cases = {"customer: jane tan": "customer: [NAME]",
+                 "tan mei ling complained": "[NAME] complained",
+                 "TAN AH KOW complained": "[NAME] complained",
+                 "ZHI WEI TAN complained": "[NAME] complained",
+                 "Dear MR TAN, your parcel": "Dear [NAME], your parcel",
+                 "Mr TAN AH KOW": "[NAME]",
+                 "mr tan ah kow said the parcel was late": "[NAME] said the parcel was late",
+                 "Regards, JOHN": "Regards, [NAME]",
+                 "regards, jane tan": "regards, [NAME]",
+                 "jane tan here, order 12345": "[NAME] here, order 12345",
+                 "JANE TAN here, order 12345": "[NAME] here, order 12345",
+                 "lim jane said": "[NAME] said",
+                 "ahmad bin yusof": "[NAME]",
+                 "Name: tan ah kow": "Name: [NAME]",
+                 "my name is jane tan lee and my parcel is late": "my name is [NAME] and my parcel is late",
+                 "Customer: Tan Ah Kow Jr": "Customer: [NAME]"}
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.check(text, expected)
+
+    def test_p1_numbered_addresses_in_any_casing(self):
+        cases = {"12 BEDOK NORTH DRIVE": "[ADDRESS]", "12 bedok north drive": "[ADDRESS]", "5 orchard way": "[ADDRESS]",
+                 "JALAN BUKIT MERAH": "[ADDRESS]", "jln bukit merah": "[ADDRESS]", "ANG MO KIO CENTRAL": "[ADDRESS]",
+                 "at 12 bedok north drive, call me": "at [ADDRESS], call me"}
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.check(text, expected)
+
+    def test_p2_greeting_before_complaint_text_is_kept(self):  # John's repro: "Hi, Lat Parcle Apolgy" became [NAME]
+        for text in ("Hi, Lat Parcle Apolgy", "Hi, Late Delivery Complaint", "Hi, Damaged Parcel",
+                     "hello my parcel is late again", "Hi team, where is order 25574", "Hi there, wrong address",
+                     "Hey, COD amount wrong", "Hi Lat parcel late", "Hi, Late delivery. Order 25574 came 3 days late."):
+            with self.subTest(text=text):
+                self.check(text, text)
+
+    def test_p2_greeting_before_a_real_name_still_masks(self):
+        cases = {"Hi Jane, my parcel is late": "Hi [NAME], my parcel is late",
+                 "Hello Zhi Wei,\nmy parcel": "Hello [NAME],\nmy parcel",
+                 "Hi Mr Tan": "Hi [NAME]", "hey Priya!": "hey [NAME]!", "Hi JANE": "Hi [NAME]",
+                 "Hi Zhi Wei": "Hi [NAME]"}
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.check(text, expected)
+
+    def test_copilot_apostrophe_surname_prefix(self):
+        self.check("Ryan D'Cruz called", "[NAME] called")
+        self.check("Mary D\u2019Souza called", "[NAME] called")
+
+    def test_copilot_surname_first_before_a_given_name(self):
+        self.check("Lim Jane Tan", "[NAME]")
+        self.check("Customer Lim Jane Tan of 123 Orchard Road", "Customer [NAME] of [ADDRESS]")
+
+    def test_everyday_words_near_name_or_street_rules_stay(self):
+        for text in ("2 days late and no way to reach the driver", "took 3 attempts to find a place",
+                     "3 parcels went the wrong way", "The Central zone had most complaints",
+                     "parcel left at the side of the road", "I AM VERY UPSET", "COD AMOUNT WRONG", "SIM CARD MISSING",
+                     "low quality packaging", "MY PARCEL IS LATE AGAIN", "This is unacceptable", "i am still waiting",
+                     "thanks for your help", "Dear Sir/Madam", "dear valued customer", "10 KG PARCEL"):
+            with self.subTest(text=text):
+                self.check(text, text)
+
+    def test_guard_is_idempotent_on_every_new_form(self):
+        for text in ("Customer: JANE TAN at 12 bedok north drive", "tan mei ling complained", "Regards, JOHN",
+                     "Lim Jane Tan", "Hi Jane,", "ahmad bin yusof", "ZHI WEI TAN"):
+            once = privacy_guard(text)[0]
+            self.assertEqual(privacy_guard(once)[0], once)
+
+
 if __name__ == "__main__":
     unittest.main()
