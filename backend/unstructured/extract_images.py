@@ -158,10 +158,10 @@ def run(data_dir: Path, out_dir: Path, *, limit: Optional[int] = None, only: Opt
     return manifest
 
 
-def record_spend(out_dir: Path, model: str, counts: Counter) -> Dict[str, Any]:
+def record_spend(out_dir: Path, model: str, counts: Counter, tool: str = "extract_images") -> Dict[str, Any]:
     """Append this run to spend_log.jsonl and return this run's and the running total cost (estimates)."""
     run_cost = llm.estimate_cost(model, counts["prompt_tokens"], counts["completion_tokens"])
-    entry = {"run_at": _now(), "tool": "extract_images", "model": model, "paid_calls": counts["paid_call"],
+    entry = {"run_at": _now(), "tool": tool, "model": model, "paid_calls": counts["paid_call"],
              "failed_calls": counts["failed_call"], "cache_hits": counts["cache_hit"],
              "prompt_tokens": counts["prompt_tokens"], "completion_tokens": counts["completion_tokens"],
              "est_cost_usd": run_cost}

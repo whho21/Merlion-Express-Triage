@@ -18,10 +18,11 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
 DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_EMBED_MODEL = "text-embedding-3-small"
 RETRYABLE_HTTP = {408, 409, 429, 500, 502, 503, 504}
 TEAM_BUDGET_USD = 50.0  # team key sheet, 16 Nov: hard budget for the whole project, monitored weekly
 
@@ -32,6 +33,9 @@ PRICES_USD_PER_MTOK = {
     "gpt-4o": (2.50, 10.00),
     "gpt-4.1-mini": (0.40, 1.60),
     "gpt-4.1": (2.00, 8.00),
+    "text-embedding-3-small": (0.02, 0.0),
+    "text-embedding-3-large": (0.13, 0.0),
+    "text-embedding-ada-002": (0.10, 0.0),
 }
 
 
@@ -71,7 +75,7 @@ def settings(repo_root: Path) -> Dict[str, Optional[str]]:
     env_file = read_dotenv(repo_root / ".env")
     pick = lambda name, default=None: os.environ.get(name) or env_file.get(name) or default  # noqa: E731
     return {"api_key": pick("OPENAI_API_KEY"), "base_url": pick("OPENAI_BASE_URL", DEFAULT_BASE_URL),
-            "model": pick("A_VISION_MODEL", DEFAULT_MODEL)}
+            "model": pick("A_VISION_MODEL", DEFAULT_MODEL), "embed_model": pick("A_EMBED_MODEL")}
 
 
 def _urllib_transport(url: str, headers: Dict[str, str], body: bytes, timeout: float) -> Tuple[int, bytes]:
@@ -90,6 +94,69 @@ def log_telemetry(path: Optional[Path], **fields: Any) -> None:
     fields = {"ts": datetime.now(timezone.utc).isoformat(timespec="seconds"), **fields}
     with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(fields) + "\n")
+
+
+def _post_with_retries(url: str, api_key: str, body: bytes, transport: Transport, timeout: float, max_attempts: int,
+                       sleep: Callable[[float], None]) -> Tuple[Optional[bytes], int, int, Optional[LLMError]]:
+    """POST JSON with bounded retries (429 / 5xx / network only). Returns (body, attempts, latency_ms, error)."""
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    started = time.monotonic()
+    attempt, error, raw = 0, None, None
+    while attempt < max_attempts:
+        attempt += 1
+        try:
+            status, raw = transport(url, headers, body, timeout)
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            error = LLMError("NETWORK", f"{type(exc).__name__}: {exc}", retryable=True)
+        else:
+            if status == 200:
+                error = None
+                break
+            error = LLMError(f"HTTP_{status}", f"endpoint returned HTTP {status}", retryable=status in RETRYABLE_HTTP)
+        if not error.retryable or attempt >= max_attempts:
+            break
+        sleep(2 ** attempt)
+    return raw, attempt, int((time.monotonic() - started) * 1000), error
+
+
+def embed_texts(texts: List[str], *, api_key: Optional[str], model: str = DEFAULT_EMBED_MODEL,
+                base_url: str = DEFAULT_BASE_URL, tool: str, telemetry_path: Optional[Path] = None,
+                transport: Optional[Transport] = None, timeout: float = 60.0, max_attempts: int = 3,
+                sleep: Callable[[float], None] = time.sleep, batch_size: int = 96
+                ) -> Tuple[List[List[float]], Dict[str, int]]:
+    """Embed texts with the class endpoint, in batches. Returns (vectors in input order, token usage).
+
+    Callers must mask personal data first: whatever is passed here leaves the machine.
+    Telemetry records counts, tokens and cost only, never the texts.
+    """
+    if not api_key:
+        raise LLMError("NO_API_KEY", "OPENAI_API_KEY is not set in the environment or the team repo .env")
+    transport = transport or _urllib_transport
+    url = base_url.rstrip("/") + "/embeddings"
+    vectors: List[List[float]] = []
+    total = 0
+    for start in range(0, len(texts), batch_size):
+        batch = texts[start:start + batch_size]
+        body = json.dumps({"model": model, "input": batch}).encode("utf-8")
+        raw, attempt, latency_ms, error = _post_with_retries(url, api_key, body, transport, timeout, max_attempts, sleep)
+        common = dict(tool=tool, model=model, items=len(batch), attempts=attempt, latency_ms=latency_ms, cache="miss")
+        if error is not None:
+            log_telemetry(telemetry_path, status="failed", error=error.code, prompt_tokens=0, **common)
+            raise error
+        try:
+            payload = json.loads(raw)
+            rows = sorted(payload["data"], key=lambda d: d["index"])
+            batch_vectors = [[float(x) for x in row["embedding"]] for row in rows]
+            if len(batch_vectors) != len(batch):
+                raise ValueError(f"{len(batch_vectors)} vectors for {len(batch)} texts")
+        except (ValueError, KeyError, TypeError) as exc:
+            log_telemetry(telemetry_path, status="failed", error="BAD_RESPONSE", prompt_tokens=0, **common)
+            raise LLMError("BAD_RESPONSE", f"could not read the embedding response: {exc}") from exc
+        tokens = int((payload.get("usage") or {}).get("prompt_tokens", 0))
+        total += tokens
+        vectors.extend(batch_vectors)
+        log_telemetry(telemetry_path, status="ok", prompt_tokens=tokens, cost_usd=estimate_cost(model, tokens, 0), **common)
+    return vectors, {"prompt_tokens": total, "completion_tokens": 0}
 
 
 def vision_json(image: bytes, mime: str, prompt: str, *, api_key: Optional[str], model: str,
@@ -111,27 +178,8 @@ def vision_json(image: bytes, mime: str, prompt: str, *, api_key: Optional[str],
             {"type": "image_url", "image_url": {"url": data_url, "detail": "high"}},
         ]}],
     }).encode("utf-8")
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     url = base_url.rstrip("/") + "/chat/completions"
-
-    started = time.monotonic()
-    attempt, error = 0, None
-    while attempt < max_attempts:
-        attempt += 1
-        try:
-            status, raw = transport(url, headers, body, timeout)
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            error = LLMError("NETWORK", f"{type(exc).__name__}: {exc}", retryable=True)
-        else:
-            if status == 200:
-                error = None
-                break
-            error = LLMError(f"HTTP_{status}", f"endpoint returned HTTP {status}", retryable=status in RETRYABLE_HTTP)
-        if not error.retryable or attempt >= max_attempts:
-            break
-        sleep(2 ** attempt)
-
-    latency_ms = int((time.monotonic() - started) * 1000)
+    raw, attempt, latency_ms, error = _post_with_retries(url, api_key, body, transport, timeout, max_attempts, sleep)
     common = dict(tool=tool, source_id=source_id, model=model, prompt_version=prompt_version, attempts=attempt,
                   latency_ms=latency_ms, cache="miss")
     if error is not None:

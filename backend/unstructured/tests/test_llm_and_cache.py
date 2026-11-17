@@ -77,6 +77,31 @@ class VisionJsonTests(unittest.TestCase):
         self.assertEqual((ctx.exception.code, fake.calls), ("NO_API_KEY", []))
 
 
+class EmbedTextsTests(unittest.TestCase):
+    def ok(self, n, dim=3):
+        return 200, json.dumps({"data": [{"index": i, "embedding": [float(i)] * dim} for i in reversed(range(n))],
+                                "usage": {"prompt_tokens": 5 * n}}).encode()
+
+    def test_batches_keeps_order_and_logs_cost_without_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tel = Path(tmp) / "telemetry.jsonl"
+            fake = FakeTransport(self.ok(2), self.ok(1))
+            vecs, usage = llm.embed_texts(["secret one", "two", "three"], api_key="k", tool="embed_index",
+                                          telemetry_path=tel, transport=fake, batch_size=2, sleep=lambda s: None)
+            lines = tel.read_text(encoding="utf-8")
+        self.assertEqual([v[0] for v in vecs], [0.0, 1.0, 0.0])  # re-sorted by index within each batch
+        self.assertEqual(usage["prompt_tokens"], 15)
+        self.assertEqual(fake.calls[0], {"model": "text-embedding-3-small", "input": ["secret one", "two"]})
+        self.assertNotIn("secret", lines)
+        self.assertIn('"cost_usd"', lines)
+
+    def test_quota_error_is_reported_not_hidden(self):
+        fake = FakeTransport((429, b"{}"), (429, b"{}"), (429, b"{}"))
+        with self.assertRaises(llm.LLMError) as ctx:
+            llm.embed_texts(["x"], api_key="k", tool="t", transport=fake, sleep=lambda s: None)
+        self.assertEqual((ctx.exception.code, len(fake.calls)), ("HTTP_429", 3))
+
+
 class CostTests(unittest.TestCase):
     def test_estimate_cost(self):
         self.assertEqual(llm.estimate_cost("gpt-4o-mini", 1_000_000, 1_000_000), 0.75)

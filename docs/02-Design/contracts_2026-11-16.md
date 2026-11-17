@@ -30,11 +30,14 @@ Route paths and concrete JSON schemas remain to be agreed, rather than guessed b
 Producer and consumer review a synthetic example and failure case, record the agreed version, then link their PR and actual check results in `docs/03-Handoffs/`. E's first runner increment should execute five cases from C's starter; a 200 response alone is not a pass. Every owner fixes failures in their own component. Jeffrey contributes business scenarios/relevance review; Wai Hong owns runner implementation and consolidated results, not all expected-answer definitions. A/B/C validate source facts, identity and policy expectations.
 ---
 
-## A — Extraction records, search results and citations (DRAFT for the 17 Nov sync)
+## A — Extraction records, search results and citations (agreed at the 17 Nov sync)
 
-**Proposed by:** Ralph (Developer A). **Status:** draft for B/C review, not frozen. Section 4 matches the email
-parser in `backend/unstructured/` (16 Nov).
-**Consumers:** B (loads POD/rate records into MySQL), C (search tools, final-answer citation checks).
+**Proposed by:** Ralph (Developer A). **Status:** **agreed by B (Jenn) and C (John) at the 17 Nov, 2 PM sync.**
+Later changes go through a PR with a note here. Section 4 matches the email parser in `backend/unstructured/` (16 Nov).
+**Consumers:** **B (Jenn)** — `get_pod` and `get_rate` read A's POD and rate-card files through A's `pod.find_pod` and
+`ratecard.lookup_rate` (team plan v0.5 §4 B; B task 6). **C (John)** — `search_emails` / `search_policy`, calls B's
+tools, and checks final-answer citations. Agreed 17 Nov: A's records stay files for now (database design, 16 Nov);
+loading them into MySQL is a later, optional item.
 All samples are **synthetic**: no client data.
 
 ### 1. Citation (shared by every A tool)
@@ -56,9 +59,9 @@ Follows the team plan's citation shape, with A's locators filled in.
 | `image` (POD) | `pod:<v1|v2>:<order_id>` | image path | `field:<name>` |
 | `image` (rate card) | `ratecard:<effective_from>` | image path | `row:<zone>/col:<band>` |
 | `document` (email) | `email:<file stem>` | email path | `header:<name>` or `body:char:<start>-<end>` |
-| `document` (policy) | `policy:<file stem>` | guide path | `section:<heading>` / `page:<n>` (format unknown until the guide arrives) |
+| `document` (policy) | `policy:<workbook stem>:resolution_guide` | workbook path | `sheet:Resolution Guide\|row:<n>` (guide arrived as an Excel tab, 16 Nov) |
 
-### 2. POD extraction record (A produces → B loads)
+### 2. POD extraction record (A produces, B reads for get_pod)
 
 Built by `python -m backend.unstructured.extract_images` → `output/unstructured/pod_records.jsonl` (git-ignored,
 unmasked). Synthetic sample:
@@ -113,7 +116,7 @@ Rules:
   call failed — `extraction.error` says why). Every image gets a record and an `image_manifest.json` entry.
 - `pod.find_pod(records, source_system, order_id)` returns `not_found` for a v2 order — a v1 card is never reused (T-A05).
 
-### 3. Rate card record (A produces → B loads)
+### 3. Rate card record (A produces, B reads for get_rate)
 
 Built by the same command → `output/unstructured/rate_cards.jsonl`. Synthetic prices:
 
@@ -236,10 +239,20 @@ return the envelope below. `category` (added 17 Nov, optional) returns that comp
 `<package>/tabular/` (T-A18); a category with no rule (e.g. `compliment`) returns `not_found` — never an invented rule.
 `INDEX_MISSING` means the ingest has not been run. `ok` is `false` only for `failed`.
 
-Code: `backend/unstructured/search.py`. Keyword ranking, no embeddings (no spend). Each `search_emails` hit:
+**Updated 17 Nov (team decision): hybrid retrieval.** Both tools take `mode="hybrid"` (default) | `"vector"` |
+`"keyword"`; every result carries `retrieval` (`hybrid:keyword+<embed model>`, `vector:<model>`, `keyword`,
+`keyword (fallback: <CODE>)`, `category`, `order_filter`, `all_rules`). Vector side = embeddings of masked text in
+FAISS, chunks + citations in SQLite (`vector_index.py`, handoff `Ralph_2026-11-17-vector-index.md`). Embedding model
+today: `local-tfidf-chargram-v1` (numpy, offline; the API key has no credit); `text-embedding-3-small` via
+`A_EMBED_MODEL` when credit returns. If it is
+unavailable (`NO_FAISS`, `INDEX_MISSING`, `INDEX_STALE`, `EMBED_<HTTP code>`), hybrid falls back to keyword and says
+so; `mode="vector"` returns `failed` with that code. Hit shapes and citations below are the same in every mode.
+
+Code: `backend/unstructured/search.py`. Each `search_emails` hit:
 `{text, score, category, is_complaint, received_at, order_numbers, citation}` where `citation.locator` =
 `body:char:<a>-<b>` and `body[a:b] == text` exactly. Each `search_policy` hit: `{text, score, heading, fields,
-guide_version, authority, citation}`. Why keyword search and not embeddings, with measurements:
+guide_version, authority, citation}`. Measurements: keyword vs vector vs hybrid (hybrid chosen) in
+`docs/03-Handoffs/Ralph_2026-11-17-vector-index.md`; the earlier keyword-only measurement in
 `docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`.
 
 ### 6. A's telemetry lines (draft until C's shared telemetry contract)
@@ -253,11 +266,11 @@ One JSON line per call in `output/unstructured/telemetry.jsonl`. Never prompt, q
 {"ts": "…", "tool": "search_emails|search_policy", "status": "found", "hits": 3, "latency_ms": 4}
 ```
 
-### Open points for B/C on 17 Nov
+### Points for B/C at the 17 Nov sync — outcome
 
-1. B: one `orders` key `(source_system, order_id)`. Does B want POD records keyed the same way? (proposed: yes)
-2. B: who owns COD truth when the card and `cod_amount` differ (T-A08)? Proposed: store both, the app shows both.
-3. C: is `locator` precise enough for the final-answer citation check?
+1. B: one `orders` key `(source_system, order_id)`; POD records keyed the same way. **Agreed 17 Nov.**
+2. B: COD truth when the card and `cod_amount` differ (T-A08): store both, the app shows both. **Agreed 17 Nov.**
+3. C: `locator` precise enough for the final-answer citation check. **Agreed 17 Nov (format accepted as is).**
 4. ~~All: where does masking happen?~~ **Decided 16 Nov (John): not in A. A returns everything unmasked; B/C/D
-   mask.** Still open for C: mask before the AI model sees the text, or only on the final answer? (PDPA question
-   likely at the demo.)
+   mask.** Proposed 17 Nov: C masks **before** the AI model sees the text, reusing A's `masking.py` (PDPA question
+   likely at the demo). **C to confirm in writing.**
