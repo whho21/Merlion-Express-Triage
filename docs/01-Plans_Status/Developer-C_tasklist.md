@@ -19,7 +19,7 @@ Checkpoint 1 is **Fri 20 Nov, 17:00 SGT**; Checkpoint 2 remains **Mon 23 Nov, 09
 | 5 | Compile proposed architecture and Mermaid flow with A/B/D; record recommendation-only boundary | 20 Nov, 17:00 | ⏳ |
 | 6 | Deliver query-time SQL plus image flow with grounded citations; clarify ambiguity and abstain when policy is missing | 20 Nov internal; 23 Nov, 09:00 checkpoint | ⏳ |
 | 7 | Implement persistent sessions/restart, deterministic input refusals, output checks, evidence validation and bounded dependency failure handling. *17 Nov: SQLite recovery, candidate/source checks, safe refusals, citation validation and bounded calls implemented and checked locally, including a real server restart; live-data/model acceptance and PR review pending. See implementation handoff.* | 24 Nov | 🚧 |
-| 8 | Own model telemetry/daily spend, review E runner/configuration and contribute eight cases including five kill-shot phrasings and at least two refusals | 24 Nov | ⏳ |
+| 8 | Own model telemetry/daily spend, review E runner/configuration and contribute eight cases including five kill-shot phrasings and at least two refusals. *18 Nov (early): contributed 26 HTTP-01–03 cases with 4 refusals and 5 kill-shots in `evals/complaint_api_http_cases.json` — see [eval cases handoff](../03-Handoffs/John_2026-11-17-eval-cases-http01-03.md); telemetry pending.* | 24 Nov | 🚧 |
 | 9 | Document backend recovery, coordinate five attributable contributions, checkpoint merges and submission; validate Jeffrey’s pitch claims and lead technical Q&A | 20–27 Nov | ⏳ |
 
 ## Table creation and repeatable loading — current versus future
