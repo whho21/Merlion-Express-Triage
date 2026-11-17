@@ -16,7 +16,7 @@ Checkpoint 1 is **Fri 20 Nov, 17:00 SGT**; Checkpoint 2 remains **Mon 23 Nov, 09
 | 2 | Profile SQL/GPS using pandas; investigate composite identities, delivery gaps, postal semantics and time alignment; update audit/traps | 20 Nov, 17:00 | ⏳ |
 | 3 | Verify structured questions Q01/Q03–Q06 with A/E; John sends; preserve unresolved business rules | 16–17 Nov | ⏳ |
 | 4 | Agree extraction/lookup/tool schemas with A/C; publish fixture and cleaned Mermaid ER | 17 Nov contracts; 20 Nov, 17:00 ER | ⏳ |
-| 5 | Build idempotent cleaned loaders and candidate lookup using system_version/order_id; preserve raw timestamps and postal text. *17 Nov: candidate-lookup ownership moved to C by team agreement (RID item 20) — C's [TOOL-05 handoff](../03-Handoffs/John_2026-11-17-tool05-sql-provider.md) has the reference implementation and review requests for the data owner; B's remaining scope is loaders, weekly views and definitions.* | 18–23 Nov | ⏳ |
+| 5 | Build idempotent cleaned loaders and candidate lookup using system_version/order_id; preserve raw timestamps and postal text. *17 Nov: candidate-lookup ownership moved to C (RID item 20, merged as PR #17); B's remaining scope is loaders, weekly views and definitions.* | 18–23 Nov | ⏳ |
 | 6 | Expose cited delivery/POD/GPS/date-sensitive rate tools; use A sample for Friday image integration; do not infer missing rates/attempts | 20 Nov internal; 23 Nov, 09:00 checkpoint | ⏳ |
 | 7 | Implement weekly driver/zone aggregates only with approved case/time/dedup/zone definitions; expose unknowns and limitations | 23–24 Nov; client-dependent | ⏳ |
 | 8 | Supply six checkable data/analytics cases, source-tool telemetry and independently verified totals; fix own failures | 24 Nov | ⏳ |

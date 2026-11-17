@@ -6,7 +6,7 @@
     - Jenn Fang (B — adopt ownership, extend and verify)
     - Ho Wai Hong (E — runner cases for the live flow)
     - Jeffrey Kong (D — UI verification against the live flow)
-- **Status:** implemented, unit-tested and verified end-to-end against live local MySQL; not committed as a PR and no consumer acceptance claimed yet. Ownership transferred from B to C on 17 Nov (agreed with Jenn; RID item 20) — this is C's component; B's data-owner review is still requested.
+- **Status:** implemented, unit-tested and verified end-to-end against live local MySQL; merged as [PR #17](https://github.com/fde-sctp-aieng-FT-Cohort1/team2_merlion_express/pull/17). No deployment or consumer acceptance claimed. Ownership transferred from B to C on 17 Nov (agreed with Jenn; RID item 20) — this is C's component; B's data-owner review is still requested.
 
 ## What this is
 
@@ -76,7 +76,7 @@ Ownership of this component transferred from B to C on 17 Nov 2026, agreed with 
 
 ## C follow-ups (John)
 
-- Commit this increment with the verification table above as PR evidence before marking tasklist items.
+- ~~Commit this increment with the verification table above as PR evidence~~ — done: merged as [PR #17](https://github.com/fde-sctp-aieng-FT-Cohort1/team2_merlion_express/pull/17).
 - Note in the API catalog review that the "Known implementation gaps" item for the live provider is now implemented pending B adoption.
 
 ## D (Jeffrey) / E (Wai Hong)
