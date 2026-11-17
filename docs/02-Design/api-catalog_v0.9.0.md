@@ -10,7 +10,7 @@ One Python HTTP API connects the React screens to internal SQL, file-backed evid
 
 | Boundary | Release design |
 |---|---|
-| Browser → backend | Six JSON endpoint contracts under `/api`; one FastAPI + Pydantic + Uvicorn service with pinned runtime requirements. Four endpoints are implemented; both weekly endpoints remain planned. |
+| Browser → backend | Six JSON endpoint contracts under `/api`; one FastAPI + Pydantic + Uvicorn service with pinned runtime requirements. Six endpoints are implemented; the weekly pair runs behind an injectable weekly source whose default is unavailable until B's reviewed aggregates land. |
 | Backend → data services | Python function calls for identity, SQL/GPS, evidence retrieval, rates and policy. Internal tools are not additional browser endpoints. |
 | Preparation | Separate commands for initial database creation/seeding, case transformation, image/text ingestion and index publication. HTTP requests never trigger dataset reloads or paid image extraction. |
 | Storage | MySQL operational/case tables and weekly views; four JSONL evidence files; GPS/reference files; optional semantic index; implemented local SQLite sessions. |
@@ -26,7 +26,7 @@ One Python HTTP API connects the React screens to internal SQL, file-backed evid
 
 ## 2. HTTP endpoint catalog
 
-The complaint submission, session messages, session retrieval and health handlers are implemented. The complaint service uses an injectable structured-provider boundary; its default returns an explicit unavailable error until B's live lookup is connected. It gathers cached A POD/policy evidence after identity resolution and abstains from unsupported recommendations. Both weekly handlers remain proposed. Five contracts have frontend call functions; health is declared in the route map but has no current screen caller.
+The complaint submission, session messages, session retrieval and health handlers are implemented. The complaint service uses an injectable structured-provider boundary; its default returns an explicit unavailable error until B's live lookup is connected. It gathers cached A POD/policy evidence after identity resolution and abstains from unsupported recommendations. The weekly handlers are implemented behind an injectable weekly source: the default returns an empty week list and a 503 with limitations (never invented zeros), and an evals fixture source serves the frozen shape for demo profiles. Five contracts have frontend call functions; health is declared in the route map but has no current screen caller.
 
 | ID | Method and path | Request | Response / purpose |
 |---|---|---|---|
@@ -271,7 +271,7 @@ Apply this per feature, preserve usable features when another fails, and clear o
 
 | Decision | Proposed position / remaining agreement |
 |---|---|
-| HTTP contract freeze | Six client paths remain the contract; FastAPI and complaint/session schemas, limits and error mappings are implemented. Obtain consumer agreement on the recorded implementation decisions and complete both weekly routes. |
+| HTTP contract freeze | Six client paths remain the contract; FastAPI and complaint/session schemas, limits and error mappings are implemented. Weekly routes are implemented behind an injectable source with C's proposed definitions pending B's confirmation; obtain consumer agreement on the recorded implementation decisions. |
 | Reporting definitions | Agree Mon–Sun/Date Opened rules, canonical-case matching, coverage, guide-gap/approval definitions and nullable metric handling. |
 | Session/retry semantics | SQLite isolation, conflict responses, existing-session submit rejection and source-version selection checks are implemented. Retention, future access controls and POST deduplication after a timeout remain open. |
 | Readiness / source selection | Agree per-feature configuration and optional health capability fields; implement the reviewed demo/live matrix. |

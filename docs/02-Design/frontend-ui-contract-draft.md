@@ -62,6 +62,8 @@ Rules the UI relies on:
 
 ## 3. Weekly response (B computes, C exposes)
 
+*17 Nov (late): HTTP-04/05 are implemented behind an injectable weekly source — production default unavailable (empty weeks, 503 with limitations), `evals/weekly_fixture.py` serves this shape for demo profiles. The definitions below are C's proposed defaults pending B's confirmation.*
+
 ```json
 {
   "period": { "week_start": "2026-02-16", "week_end": "2026-02-22", "timezone": "Asia/Singapore" },
