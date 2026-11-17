@@ -1,68 +1,446 @@
 {
   "owner": "Developer A (Ralph)",
-  "about": "Checkable extraction/retrieval cases on the real package. Sanitised: file stems and order numbers only. Run: python -m backend.unstructured.evals. PENDING = the output it needs is not built yet. Updated 17 Nov for the client's answers Q01-Q08 (guide received; April card applies retrospectively; upper weight limit inclusive; no POD after 1 Feb). E may fold these into the team runner.",
+  "about": "Checkable extraction/retrieval cases on the real package. Sanitised: file stems and order numbers only. Run: python -m backend.unstructured.evals. PENDING = the output it needs is not built yet. Updated 17 Nov for the client's answers Q01-Q08 (guide received; April card applies retrospectively; upper weight limit inclusive; no POD after 1 Feb). E may fold these into the team runner. A-E19..A-E21 (17 Nov) need the vector index (python -m backend.unstructured.build_index) and stay PENDING until it is built; their expectations are targets, not yet observed.",
   "cases": [
-    {"id": "A-E01", "trap": "T-A18", "title": "Late-delivery email gets the guide's late-delivery rule, cited to its row (client Q01/Q02)",
-     "needs": "policy_chunks.jsonl", "call": "search_policy", "args": {"category": "late"},
-     "expect": [{"path": "status", "equals": "found"}, {"path": "data.0.heading", "equals": "Late delivery"},
-                {"path": "data.0.citation.locator", "startswith": "sheet:Resolution Guide|row:"},
-                {"path": "data.0.authority", "contains": "Q02"}]},
-    {"id": "A-E02", "trap": "T-A06", "title": "Kill-shot order 22574 finds its complaint email with a citation",
-     "needs": "emails.jsonl", "call": "search_emails", "args": {"order_number": "22574"},
-     "expect": [{"path": "status", "equals": "found"}, {"path": "sources", "contains": "email:2026-06-19_014"},
-                {"path": "data.0.citation.locator", "startswith": "body:char:"}]},
-    {"id": "A-E03", "trap": "T-A04", "title": "Compliment is not counted as a complaint",
-     "needs": "emails.jsonl", "call": "email_record", "args": {"source_id": "email:2026-03-25_005"},
-     "expect": [{"path": "category", "equals": "compliment"}, {"path": "is_complaint", "equals": false}]},
-    {"id": "A-E04", "trap": "-", "title": "Unknown order number -> not_found, not a guess",
-     "needs": "emails.jsonl", "call": "search_emails", "args": {"order_number": "99999"},
-     "expect": [{"path": "status", "equals": "not_found"}, {"path": "ok", "equals": true}]},
-    {"id": "A-E05", "trap": "-", "title": "Every email and the guide get a visible outcome",
-     "needs": "manifest.json", "call": "ingest_manifest", "args": {},
-     "expect": [{"path": "summary.emails.files", "equals": 90}, {"path": "summary.emails.status.ok", "equals": 90},
-                {"path": "summary.policy.status.ok", "equals": 1}, {"path": "summary.policy.chunks", "equals": 12},
-                {"path": "files", "length": 91}]},
-    {"id": "A-E06", "trap": "T-A02", "title": "Email passes number + date so B can rule out orders created later",
-     "needs": "emails.jsonl", "call": "email_record", "args": {"source_id": "email:2026-03-09_019"},
-     "expect": [{"path": "order_numbers", "equals": ["32460"]}, {"path": "received_at", "startswith": "2026-03-09"},
-                {"path": "system_hint", "equals": null}]},
-    {"id": "A-E07", "trap": "T-A12/T-A13", "title": "POD date read day-first despite the I/1 look-alike, and matches SQL",
-     "needs": "pod_records.jsonl", "call": "pod_record", "args": {"source_id": "pod:v1:24377"},
-     "expect": [{"path": "fields.delivered_at.value", "startswith": "2025-11-18T"},
-                {"path": "validation.matches_sql.delivered_at", "equals": true}]},
-    {"id": "A-E08", "trap": "T-A05", "title": "No POD for the v2 order 22574, said plainly (client Q04)",
-     "needs": "pod_records.jsonl", "call": "find_pod", "args": {"source_system": "v2", "order_id": 22574},
-     "expect": [{"path": "status", "equals": "not_found"}, {"path": "reason", "startswith": "No POD on file"}]},
-    {"id": "A-E09", "trap": "T-A08", "title": "POD cash-on-delivery conflict with SQL is flagged",
-     "needs": "pod_records.jsonl", "call": "pod_record", "args": {"source_id": "pod:v1:24002"},
-     "expect": [{"path": "flags", "contains": "cod_conflict_with_sql"}]},
-    {"id": "A-E10", "trap": "T-A15", "title": "Order before the April card is priced from it, marked retrospective (client Q06)",
-     "needs": "rate_cards.jsonl", "call": "lookup_rate", "args": {"zone": "Central", "weight_kg": 2.0, "on_date": "2026-01-15"},
-     "expect": [{"path": "status", "equals": "found"}, {"path": "data.applied_retrospectively", "equals": true},
-                {"path": "data.citation.locator", "equals": "row:Central/col:<=3kg"}]},
-    {"id": "A-E11", "trap": "T-A16", "title": "Exactly 10 kg goes to the 3-10 kg band (client Q07)",
-     "needs": "rate_cards.jsonl", "call": "lookup_rate", "args": {"zone": "Central", "weight_kg": 10.0, "on_date": "2026-05-01"},
-     "expect": [{"path": "status", "equals": "found"}, {"path": "data.band", "equals": "3-10kg"}]},
-    {"id": "A-E12", "trap": "T-A05", "title": "Every POD card is a v1 order and the key fields match SQL",
-     "needs": "image_manifest.json", "call": "image_manifest", "args": {},
-     "expect": [{"path": "summary.pod.images", "equals": 80}, {"path": "summary.pod.all_key_fields_match_sql", "equals": 80}]},
-    {"id": "A-E13", "trap": "T-A16", "title": "Exactly 3 kg goes to the first band (client Q07)",
-     "needs": "rate_cards.jsonl", "call": "lookup_rate", "args": {"zone": "Central", "weight_kg": 3.0, "on_date": "2026-05-01"},
-     "expect": [{"path": "data.band", "equals": "<=3kg"}]},
-    {"id": "A-E14", "trap": "T-A16", "title": "Over 25 kg is quoted by hand, never priced from the card (client Q07)",
-     "needs": "rate_cards.jsonl", "call": "lookup_rate", "args": {"zone": "Central", "weight_kg": 25.5, "on_date": "2026-05-01"},
-     "expect": [{"path": "status", "equals": "not_found"}, {"path": "reason", "contains": "Q07"}]},
-    {"id": "A-E15", "trap": "T-A17", "title": "Corporate account complaints get the escalation rule",
-     "needs": "policy_chunks.jsonl", "call": "search_policy", "args": {"category": "corporate"},
-     "expect": [{"path": "data.0.heading", "startswith": "Corporate account"}]},
-    {"id": "A-E16", "trap": "-", "title": "Plain words find the right rule: 'wrong block' -> Wrong address",
-     "needs": "policy_chunks.jsonl", "call": "search_policy", "args": {"query": "parcel delivered to the wrong block"},
-     "expect": [{"path": "data.0.heading", "equals": "Wrong address"}]},
-    {"id": "A-E17", "trap": "-", "title": "A compliment has no guide rule -> not_found, nothing invented",
-     "needs": "policy_chunks.jsonl", "call": "search_policy", "args": {"category": "compliment"},
-     "expect": [{"path": "status", "equals": "not_found"}, {"path": "data", "length": 0}]},
-    {"id": "A-E18", "trap": "-", "title": "Ops zone North-East is priced from the East / North-East row (client Q03)",
-     "needs": "rate_cards.jsonl", "call": "lookup_rate", "args": {"zone": "North-East", "weight_kg": 5.0, "on_date": "2026-05-01"},
-     "expect": [{"path": "data.price_zone", "equals": "East / North-East"}, {"path": "data.band", "equals": "3-10kg"}]}
+    {
+      "id": "A-E01",
+      "trap": "T-A18",
+      "title": "Late-delivery email gets the guide's late-delivery rule, cited to its row (client Q01/Q02)",
+      "needs": "policy_chunks.jsonl",
+      "call": "search_policy",
+      "args": {
+        "category": "late"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "found"
+        },
+        {
+          "path": "data.0.heading",
+          "equals": "Late delivery"
+        },
+        {
+          "path": "data.0.citation.locator",
+          "startswith": "sheet:Resolution Guide|row:"
+        },
+        {
+          "path": "data.0.authority",
+          "contains": "Q02"
+        }
+      ]
+    },
+    {
+      "id": "A-E02",
+      "trap": "T-A06",
+      "title": "Kill-shot order 22574 finds its complaint email with a citation",
+      "needs": "emails.jsonl",
+      "call": "search_emails",
+      "args": {
+        "order_number": "22574"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "found"
+        },
+        {
+          "path": "sources",
+          "contains": "email:2026-06-19_014"
+        },
+        {
+          "path": "data.0.citation.locator",
+          "startswith": "body:char:"
+        }
+      ]
+    },
+    {
+      "id": "A-E03",
+      "trap": "T-A04",
+      "title": "Compliment is not counted as a complaint",
+      "needs": "emails.jsonl",
+      "call": "email_record",
+      "args": {
+        "source_id": "email:2026-03-25_005"
+      },
+      "expect": [
+        {
+          "path": "category",
+          "equals": "compliment"
+        },
+        {
+          "path": "is_complaint",
+          "equals": false
+        }
+      ]
+    },
+    {
+      "id": "A-E04",
+      "trap": "-",
+      "title": "Unknown order number -> not_found, not a guess",
+      "needs": "emails.jsonl",
+      "call": "search_emails",
+      "args": {
+        "order_number": "99999"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "not_found"
+        },
+        {
+          "path": "ok",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "A-E05",
+      "trap": "-",
+      "title": "Every email and the guide get a visible outcome",
+      "needs": "manifest.json",
+      "call": "ingest_manifest",
+      "args": {},
+      "expect": [
+        {
+          "path": "summary.emails.files",
+          "equals": 90
+        },
+        {
+          "path": "summary.emails.status.ok",
+          "equals": 90
+        },
+        {
+          "path": "summary.policy.status.ok",
+          "equals": 1
+        },
+        {
+          "path": "summary.policy.chunks",
+          "equals": 12
+        },
+        {
+          "path": "files",
+          "length": 91
+        }
+      ]
+    },
+    {
+      "id": "A-E06",
+      "trap": "T-A02",
+      "title": "Email passes number + date so B can rule out orders created later",
+      "needs": "emails.jsonl",
+      "call": "email_record",
+      "args": {
+        "source_id": "email:2026-03-09_019"
+      },
+      "expect": [
+        {
+          "path": "order_numbers",
+          "equals": [
+            "32460"
+          ]
+        },
+        {
+          "path": "received_at",
+          "startswith": "2026-03-09"
+        },
+        {
+          "path": "system_hint",
+          "equals": null
+        }
+      ]
+    },
+    {
+      "id": "A-E07",
+      "trap": "T-A12/T-A13",
+      "title": "POD date read day-first despite the I/1 look-alike, and matches SQL",
+      "needs": "pod_records.jsonl",
+      "call": "pod_record",
+      "args": {
+        "source_id": "pod:v1:24377"
+      },
+      "expect": [
+        {
+          "path": "fields.delivered_at.value",
+          "startswith": "2025-11-18T"
+        },
+        {
+          "path": "validation.matches_sql.delivered_at",
+          "equals": true
+        }
+      ]
+    },
+    {
+      "id": "A-E08",
+      "trap": "T-A05",
+      "title": "No POD for the v2 order 22574, said plainly (client Q04)",
+      "needs": "pod_records.jsonl",
+      "call": "find_pod",
+      "args": {
+        "source_system": "v2",
+        "order_id": 22574
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "not_found"
+        },
+        {
+          "path": "reason",
+          "startswith": "No POD on file"
+        }
+      ]
+    },
+    {
+      "id": "A-E09",
+      "trap": "T-A08",
+      "title": "POD cash-on-delivery conflict with SQL is flagged",
+      "needs": "pod_records.jsonl",
+      "call": "pod_record",
+      "args": {
+        "source_id": "pod:v1:24002"
+      },
+      "expect": [
+        {
+          "path": "flags",
+          "contains": "cod_conflict_with_sql"
+        }
+      ]
+    },
+    {
+      "id": "A-E10",
+      "trap": "T-A15",
+      "title": "Order before the April card is priced from it, marked retrospective (client Q06)",
+      "needs": "rate_cards.jsonl",
+      "call": "lookup_rate",
+      "args": {
+        "zone": "Central",
+        "weight_kg": 2.0,
+        "on_date": "2026-01-15"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "found"
+        },
+        {
+          "path": "data.applied_retrospectively",
+          "equals": true
+        },
+        {
+          "path": "data.citation.locator",
+          "equals": "row:Central/col:<=3kg"
+        }
+      ]
+    },
+    {
+      "id": "A-E11",
+      "trap": "T-A16",
+      "title": "Exactly 10 kg goes to the 3-10 kg band (client Q07)",
+      "needs": "rate_cards.jsonl",
+      "call": "lookup_rate",
+      "args": {
+        "zone": "Central",
+        "weight_kg": 10.0,
+        "on_date": "2026-05-01"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "found"
+        },
+        {
+          "path": "data.band",
+          "equals": "3-10kg"
+        }
+      ]
+    },
+    {
+      "id": "A-E12",
+      "trap": "T-A05",
+      "title": "Every POD card is a v1 order and the key fields match SQL",
+      "needs": "image_manifest.json",
+      "call": "image_manifest",
+      "args": {},
+      "expect": [
+        {
+          "path": "summary.pod.images",
+          "equals": 80
+        },
+        {
+          "path": "summary.pod.all_key_fields_match_sql",
+          "equals": 80
+        }
+      ]
+    },
+    {
+      "id": "A-E13",
+      "trap": "T-A16",
+      "title": "Exactly 3 kg goes to the first band (client Q07)",
+      "needs": "rate_cards.jsonl",
+      "call": "lookup_rate",
+      "args": {
+        "zone": "Central",
+        "weight_kg": 3.0,
+        "on_date": "2026-05-01"
+      },
+      "expect": [
+        {
+          "path": "data.band",
+          "equals": "<=3kg"
+        }
+      ]
+    },
+    {
+      "id": "A-E14",
+      "trap": "T-A16",
+      "title": "Over 25 kg is quoted by hand, never priced from the card (client Q07)",
+      "needs": "rate_cards.jsonl",
+      "call": "lookup_rate",
+      "args": {
+        "zone": "Central",
+        "weight_kg": 25.5,
+        "on_date": "2026-05-01"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "not_found"
+        },
+        {
+          "path": "reason",
+          "contains": "Q07"
+        }
+      ]
+    },
+    {
+      "id": "A-E15",
+      "trap": "T-A17",
+      "title": "Corporate account complaints get the escalation rule",
+      "needs": "policy_chunks.jsonl",
+      "call": "search_policy",
+      "args": {
+        "category": "corporate"
+      },
+      "expect": [
+        {
+          "path": "data.0.heading",
+          "startswith": "Corporate account"
+        }
+      ]
+    },
+    {
+      "id": "A-E16",
+      "trap": "-",
+      "title": "Plain words find the right rule: 'wrong block' -> Wrong address",
+      "needs": "policy_chunks.jsonl",
+      "call": "search_policy",
+      "args": {
+        "query": "parcel delivered to the wrong block"
+      },
+      "expect": [
+        {
+          "path": "data.0.heading",
+          "equals": "Wrong address"
+        }
+      ]
+    },
+    {
+      "id": "A-E17",
+      "trap": "-",
+      "title": "A compliment has no guide rule -> not_found, nothing invented",
+      "needs": "policy_chunks.jsonl",
+      "call": "search_policy",
+      "args": {
+        "category": "compliment"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "not_found"
+        },
+        {
+          "path": "data",
+          "length": 0
+        }
+      ]
+    },
+    {
+      "id": "A-E18",
+      "trap": "-",
+      "title": "Ops zone North-East is priced from the East / North-East row (client Q03)",
+      "needs": "rate_cards.jsonl",
+      "call": "lookup_rate",
+      "args": {
+        "zone": "North-East",
+        "weight_kg": 5.0,
+        "on_date": "2026-05-01"
+      },
+      "expect": [
+        {
+          "path": "data.price_zone",
+          "equals": "East / North-East"
+        },
+        {
+          "path": "data.band",
+          "equals": "3-10kg"
+        }
+      ]
+    },
+    {
+      "id": "A-E19",
+      "trap": "-",
+      "title": "Meaning search finds the rule when no keyword matches ('smashed' -> damaged)",
+      "needs": "index/a_index.faiss",
+      "call": "search_policy",
+      "args": {
+        "query": "item inside was smashed",
+        "mode": "hybrid"
+      },
+      "expect": [
+        {
+          "path": "data.0.heading",
+          "equals": "Damaged / thrown parcel"
+        },
+        {
+          "path": "retrieval",
+          "startswith": "hybrid:"
+        }
+      ]
+    },
+    {
+      "id": "A-E20",
+      "trap": "-",
+      "title": "An unrelated question finds no rule by meaning (no nearest-neighbour guess)",
+      "needs": "index/a_index.faiss",
+      "call": "search_policy",
+      "args": {
+        "query": "what is the weather in Tokyo today",
+        "mode": "vector"
+      },
+      "expect": [
+        {
+          "path": "status",
+          "equals": "not_found"
+        }
+      ]
+    },
+    {
+      "id": "A-E21",
+      "trap": "T-A04",
+      "title": "A compliment in new words is found by meaning",
+      "needs": "index/a_index.faiss",
+      "call": "search_emails",
+      "args": {
+        "query": "the delivery uncle was super kind",
+        "mode": "vector"
+      },
+      "expect": [
+        {
+          "path": "data.0.category",
+          "equals": "compliment"
+        }
+      ]
+    }
   ]
 }

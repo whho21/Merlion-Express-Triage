@@ -17,8 +17,11 @@ python -m backend.unstructured.ingest                         # emails + policy 
 python -m backend.unstructured.extract_images --dry-run       # free: how many images would be sent to the model
 python -m backend.unstructured.extract_images --limit 2       # paid smoke test (2 POD cards + the rate card)
 python -m backend.unstructured.extract_images                 # paid: every image not already cached
-python -m backend.unstructured.evals                          # A's 18 eval cases: PASS / FAIL / PENDING
-python -m unittest discover -s backend/unstructured/tests -t .   # 70 unit tests, synthetic data, no network
+pip install -r backend/unstructured/requirements.txt          # optional: faiss-cpu + numpy for vector search
+python -m backend.unstructured.build_index                    # vector index (SQLite + FAISS); paid, < US$0.001, cached
+python -m backend.unstructured.evals                          # A's 21 eval cases: PASS / FAIL / PENDING
+python -m backend.unstructured.ask                            # type a question, see the rule + emails and the search method
+python -m unittest discover -s backend/unstructured/tests -t .   # 84 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
@@ -36,13 +39,16 @@ record is `docs/04-Testing_Evals/api_spend.md`. First full run (16 Nov): 81 imag
 | `xlsx.py` | Standard-library `.xlsx` cell reader (no new dependency). |
 | `paths.py` | Finds the package folder and writes repo-relative source refs. |
 | `ingest.py` | Runs both; writes outputs + a per-file manifest; prints counts only. |
-| `llm.py` | Calls the class vision endpoint: JSON answers, 3 bounded retries, one telemetry line per call (no content). |
+| `llm.py` | Calls the class endpoint (vision JSON answers and batched embeddings): 3 bounded retries, one telemetry line per call with tokens and cost (no content). |
 | `cache.py` | Caches each answer by image hash + prompt version + model, so reruns cost nothing (task 6). |
 | `sqlref.py` | Read-only reference from the SQL dump to validate POD cards (B still owns the database). |
 | `pod.py` | POD prompt, normalisation (day-first dates, look-alike fixes, receiver kind), confidence, SQL validation, flags, `find_pod`. |
 | `ratecard.py` | Rate-card prompt and parsing (bands, prices, surcharges, notes) and `lookup_rate` with the client's rules: April card applied retrospectively (Q06), upper limit inclusive (Q07), standard only (Q08), ops zone → price row (Q03). |
 | `extract_images.py` | Runs POD + rate-card extraction with cache, manifest, telemetry and SQL validation. |
-| `search.py` | `search_emails(query, order_number=None)` and `search_policy(query="", effective_date=None, *, category=None)` for C, with exact citations. Keyword ranking + a small query-side synonym list; why not embeddings: `docs/03-Handoffs/Ralph_2026-11-17-guide-and-client-answers.md`. |
+| `search.py` | `search_emails(query, order_number=None, *, mode)` and `search_policy(query="", effective_date=None, *, category=None, mode)` for C, with exact citations. `mode="hybrid"` (default) fuses keyword + vector ranks; falls back to keyword (labelled in `retrieval`) if the index or endpoint is unavailable. |
+| `vector_index.py` | SQLite (chunks, citations, embedding cache) + FAISS (vectors). Masked text is embedded; rebuilds embed only changes; refuses a stale index. Handoff: `docs/03-Handoffs/Ralph_2026-11-17-vector-index.md`. |
+| `build_index.py` | Builds the vector index from the ingest outputs and logs the spend. |
+| `ask.py` | Try the search by hand (`python -m backend.unstructured.ask`). |
 | `evals.py` | Runs `evals/developer_a_cases.json`. |
 | `masking.py` | Shared helper for B/C/D: masks emails, NRIC, phones, unit numbers, postal codes, block numbers (not names). |
 

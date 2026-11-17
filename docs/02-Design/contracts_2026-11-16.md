@@ -236,7 +236,14 @@ return the envelope below. `category` (added 17 Nov, optional) returns that comp
 `<package>/tabular/` (T-A18); a category with no rule (e.g. `compliment`) returns `not_found` — never an invented rule.
 `INDEX_MISSING` means the ingest has not been run. `ok` is `false` only for `failed`.
 
-Code: `backend/unstructured/search.py`. Keyword ranking, no embeddings (no spend). Each `search_emails` hit:
+**Updated 17 Nov (team decision): hybrid retrieval.** Both tools take `mode="hybrid"` (default) | `"vector"` |
+`"keyword"`; every result carries `retrieval` (`hybrid:keyword+<embed model>`, `vector:<model>`, `keyword`,
+`keyword (fallback: <CODE>)`, `category`, `order_filter`, `all_rules`). Vector side = embeddings of masked text in
+FAISS, chunks + citations in SQLite (`vector_index.py`, handoff `Ralph_2026-11-17-vector-index.md`). If it is
+unavailable (`NO_FAISS`, `INDEX_MISSING`, `INDEX_STALE`, `EMBED_<HTTP code>`), hybrid falls back to keyword and says
+so; `mode="vector"` returns `failed` with that code. Hit shapes and citations below are the same in every mode.
+
+Code: `backend/unstructured/search.py`. Each `search_emails` hit:
 `{text, score, category, is_complaint, received_at, order_numbers, citation}` where `citation.locator` =
 `body:char:<a>-<b>` and `body[a:b] == text` exactly. Each `search_policy` hit: `{text, score, heading, fields,
 guide_version, authority, citation}`. Why keyword search and not embeddings, with measurements:
