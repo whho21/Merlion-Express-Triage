@@ -2,7 +2,7 @@
 
 **Owner:** E/Ho Wai Hong; C/John supplies backend recovery, technical Q&A and submission coordination; D/Jeffrey leads pitch deck, business narrative, UI storyline and client-facing presentation; A/B supply source/data checks. **Status:** Planned checks, not executed evidence. Dates are SGT; see [v0.5 plan](../01-Plans_Status/Capstone_TEAM_PLAN_v0.5.md).
 
-- [ ] Record actual startup/health commands and verify on the demo laptop using [SQL seeding guide](../../scripts/seed_sql_data.md); do not re-import destructively during a live session.
+- [ ] Record actual startup/health commands and verify on the demo laptop using [SQL seeding guide](../../database/createdb_seed_sql_data.md); do not re-import destructively during a live session.
 - [ ] Demonstrate complaint → resolved order or clarification → cited evidence → policy-backed recommendation or honest abstention.
 - [ ] Show SQL plus image evidence and three cited answers, including a source conflict and why evidence is trusted.
 - [ ] Show weekly period/driver/zone counts with approved definitions, unknown attribution and explicit limitations if source rules remain unresolved.
