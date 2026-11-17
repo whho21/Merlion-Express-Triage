@@ -284,4 +284,4 @@ Read with the [overall architecture](architecture_overall.md), [release draw.io 
 
 The 17 Nov guide/client-answer handoff supersedes the 16 Nov missing-guide, ambiguous 3/10 kg and unavailable pre-April-rate descriptions. The current release design supersedes the early instruction to move all POD/rate evidence into SQL; the API/mock handoff supersedes the global fixture-selection behaviour. Review findings remain fixes to implement, not claims that they have landed.
 
-A separate [handoff coverage review](../05-Reviews/api-catalog-review_2026-11-17.md) records the single review pass against every document in `03-Handoffs`, including non-contract items and unresolved work.
+*17 Nov (later): the separate handoff-coverage review file was removed from `05-Reviews` by team decision; its coverage outcomes live in the linked 17 Nov handoffs and this catalog's "Known implementation gaps" section instead.*
