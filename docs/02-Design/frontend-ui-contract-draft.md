@@ -104,7 +104,7 @@ Deltas to record against the draft:
 
 - **`evidence[].status` superset:** the implementation also allows `ambiguous` alongside `found | not_found | partial | failed`. Render it as a banner-level uncertainty state or treat as `partial`; either is acceptable.
 - **`messages` field:** optionally present on recovery responses only (`[{role, text}]`, sanitised turn markers). Triage screens should ignore it.
-- **Live data context:** candidates for HTTP-01/02 now resolve against live MySQL through C's TOOL-05 provider (11,499 shared v1/v2 order IDs make unqualified numbers ambiguous by design). Until D's per-feature demo/live profiles land, keep labelling per §7 of `api-catalog_v0.9.0.md` — demo profile may use fixtures; a configured live endpoint's responses must be labelled real.
+- **Live data context:** candidates for HTTP-01/02 now resolve against live MySQL through C's TOOL-05 provider (11,499 shared v1/v2 order IDs make unqualified numbers ambiguous by design). Until D's per-feature demo/live profiles land, keep labelling per §7 of `api-catalog_v0.9.1.md` — demo profile may use fixtures; a configured live endpoint's responses must be labelled real.
 - **Error shape note:** body-level `error` is `null` on normal outcomes and non-null for `failed`; the catalog §3.2 HTTP mappings (422/404/409/503/504/500) are implemented.
 
 Weekly (§3): deferred to B — see §4.4–4.5. C will implement HTTP-04/05 to this shape once Jenn confirms the counting definitions.

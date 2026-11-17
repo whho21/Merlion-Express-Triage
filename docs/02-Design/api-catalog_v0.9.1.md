@@ -1,8 +1,8 @@
 # Capstone API catalog
 
-- **Version:** 0.9.0
-- **Updated:** 17 Nov 2026 (SGT). 
-- **Status:** design specification with a staged implementation. HTTP-01–03 and health are implemented; production structured lookup, complete assessment/answer orchestration and weekly reporting remain pending. Integration decisions and checks are recorded in the [complaint/session handoff](../03-Handoffs/John_2026-11-17-complaint-session-api.md).
+- **Version:** 0.9.1
+- **Updated:** 17 Nov 2026 (SGT, late). 
+- **Status:** design specification with a staged implementation. HTTP-01–06 are implemented (weekly pair staged behind an injectable source); TOOL-01–05, 08 and 14 are implemented in code; production structured lookup is injectable (default unavailable until B's reviewed source), complete assessment/answer orchestration and published weekly aggregates remain pending. Per-row code status is marked in sections 2 and 4; integration decisions and checks are recorded in the [complaint/session handoff](../03-Handoffs/John_2026-11-17-complaint-session-api.md) and the [TOOL-05 handoff](../03-Handoffs/John_2026-11-17-tool05-sql-provider.md).
 
 One Python HTTP API connects the React screens to internal SQL, file-backed evidence and RAG services. Existing Python tools are identified separately from proposed interfaces; this document does not claim the backend or demo acceptance checks are complete.
 
@@ -28,14 +28,14 @@ One Python HTTP API connects the React screens to internal SQL, file-backed evid
 
 The complaint submission, session messages, session retrieval and health handlers are implemented. The complaint service uses an injectable structured-provider boundary; its default returns an explicit unavailable error until B's live lookup is connected. It gathers cached A POD/policy evidence after identity resolution and abstains from unsupported recommendations. The weekly handlers are implemented behind an injectable weekly source: the default returns an empty week list and a 503 with limitations (never invented zeros), and an evals fixture source serves the frozen shape for demo profiles. Five contracts have frontend call functions; health is declared in the route map but has no current screen caller.
 
-| ID | Method and path | Request | Response / purpose |
-|---|---|---|---|
-| HTTP-01 | `POST /api/complaints` | `{email_text, session_id?}` | `ComplaintResult`; start triage, resolve candidates, gather evidence and recommend/clarify/abstain. |
-| HTTP-02 | `POST /api/sessions/{session_id}/messages` | `{message?, selected_candidate?}` | `ComplaintResult`; continue the same complaint or select a candidate. |
-| HTTP-03 | `GET /api/sessions/{session_id}` | Path session ID | `ComplaintResult` plus `messages`, `recovered: true`; recover saved state. |
-| HTTP-04 | `GET /api/weekly/weeks` | None | `{weeks: string[], timezone: "Asia/Singapore", synthetic?: boolean}`; ascending available week starts. |
-| HTTP-05 | `GET /api/weekly?week_start=YYYY-MM-DD` | Required query date | `WeeklyResult`; canonical complaint counts, trends, attribution and policy gaps. |
-| HTTP-06 | `GET /api/health` | None | Proposed health/readiness result; safe dependency and feature availability, without paid model probes. |
+| ID | Method and path | Request | Response / purpose | Code status |
+|---|---|---|---|---|
+| HTTP-01 | `POST /api/complaints` | `{email_text, session_id?}` | `ComplaintResult`; start triage, resolve candidates, gather evidence and recommend/clarify/abstain. | ✅ implemented (staged: provider injectable, default unavailable) |
+| HTTP-02 | `POST /api/sessions/{session_id}/messages` | `{message?, selected_candidate?}` | `ComplaintResult`; continue the same complaint or select a candidate. | ✅ implemented |
+| HTTP-03 | `GET /api/sessions/{session_id}` | Path session ID | `ComplaintResult` plus `messages`, `recovered: true`; recover saved state. | ✅ implemented |
+| HTTP-04 | `GET /api/weekly/weeks` | None | `{weeks: string[], timezone: "Asia/Singapore", synthetic?: boolean}`; ascending available week starts. | ✅ implemented (staged: weekly source injectable, default unavailable; evals fixture for demo) |
+| HTTP-05 | `GET /api/weekly?week_start=YYYY-MM-DD` | Required query date | `WeeklyResult`; canonical complaint counts, trends, attribution and policy gaps. | ✅ implemented (staged: same boundary; aggregates pending B) |
+| HTTP-06 | `GET /api/health` | None | Proposed health/readiness result; safe dependency and feature availability, without paid model probes. | ✅ implemented (per-feature flags from configured sources) |
 
 ### HTTP-01 — submit a complaint
 
@@ -177,12 +177,12 @@ These run inside the backend. Existing callable signatures come from source; new
 
 ### 4.1 Existing unstructured tools
 
-| ID | Callable | Input / output and limits |
-|---|---|---|
-| TOOL-01 | `search.search_emails(query="", order_number=None, *, top_k=5, out_dir=...)` | Keyword/synonym ranking over `emails.jsonl`; optional exact order-number filter. Hits: `text`, `score`, `category`, `is_complaint`, `received_at`, `order_numbers`, citation. Returns original, unmasked snippets. |
-| TOOL-02 | `search.search_policy(query="", effective_date=None, *, category=None, top_k=5, out_dir=...)` | `policy_chunks.jsonl` guide hits: `text`, `score`, `heading`, `fields`, `guide_version`, `authority`, citation. Category maps to the rule; the client applies guide v2 to every case, so date is not a historical-version filter. |
-| TOOL-03 | `pod.find_pod(records, source_system, order_id)` | Caller loads published `pod_records.jsonl`; exact system/order lookup returns extracted fields, confidence, flags, source and SQL validation. Never reuse a v1 scan for a v2 order. |
-| TOOL-04 | `ratecard.lookup_rate(cards, *, zone, weight_kg, on_date)` | Caller loads `rate_cards.jsonl`; returns base standard price, band, currency, pre-GST flag, mapped price zone, retrospective flag, notes and cell citation. It is not the complete charge/refund calculation. |
+| ID | Callable | Input / output and limits | Code status |
+|---|---|---|---|
+| TOOL-01 | `search.search_emails(query="", order_number=None, *, top_k=5, out_dir=...)` | Keyword/synonym ranking over `emails.jsonl`; optional exact order-number filter. Hits: `text`, `score`, `category`, `is_complaint`, `received_at`, `order_numbers`, citation. Returns original, unmasked snippets. | ✅ implemented (A) |
+| TOOL-02 | `search.search_policy(query="", effective_date=None, *, category=None, top_k=5, out_dir=...)` | `policy_chunks.jsonl` guide hits: `text`, `score`, `heading`, `fields`, `guide_version`, `authority`, citation. Category maps to the rule; the client applies guide v2 to every case, so date is not a historical-version filter. | ✅ implemented (A; known category+query gap — use exact category path) |
+| TOOL-03 | `pod.find_pod(records, source_system, order_id)` | Caller loads published `pod_records.jsonl`; exact system/order lookup returns extracted fields, confidence, flags, source and SQL validation. Never reuse a v1 scan for a v2 order. | ✅ implemented (A; upstream status/message fix still pending — see gaps §6) |
+| TOOL-04 | `ratecard.lookup_rate(cards, *, zone, weight_kg, on_date)` | Caller loads `rate_cards.jsonl`; returns base standard price, band, currency, pre-GST flag, mapped price zone, retrospective flag, notes and cell citation. It is not the complete charge/refund calculation. | ✅ implemented (A; known expiry-fallback gap — see gaps §6) |
 
 Modules are under [`backend/unstructured/`](../../backend/unstructured/README.md). Tools read cached evidence at request time and do not call vision models. Search currently uses lexical/category ranking, not embeddings; `out_dir`/loaded records must refer to the published batch.
 
@@ -200,18 +200,18 @@ Search errors include `INDEX_MISSING`, `SOURCE_MISSING`, `EMPTY_SOURCE` or a par
 
 Names/arguments in this table are proposed; their implementation can change behind the six HTTP contracts. Return cited records or the shared tool envelope, with `ambiguous` supported for unresolved identities/rates.
 
-| ID | Service / proposed inputs | Result / responsibility |
-|---|---|---|
-| TOOL-05 | `resolve_order(order_number, received_at, system_hint=None, contact_context=None)` | Candidate list or verified composite identity; exclude orders created after the complaint and preserve reasons. Contact/case-log links are evidence, not automatic matches. |
-| TOOL-06 | `get_delivery_history(system_version, order_id)` | Latest exported attempt with delivery/driver citations; retain the established service name but explicitly state that earlier attempts/counts are unavailable. |
-| TOOL-07 | `get_gps_window(driver_id, start_utc, end_utc)` | Cited driver/time pings with raw epoch, normalised time and alignment assumptions; distance requires a supported location reference. |
-| TOOL-08 | `get_pod(system_version, order_id)` | File-loading/identity adapter over TOOL-03; preserve extraction failure, identity conflicts and source locators. |
-| TOOL-09 | `get_rate(system_version, order_id, on_date)` | TOOL-04 plus reviewed town/price mapping, standard service, CBD timing, calendar checks, GST and applicable COD fees. Return a calculation breakdown and missing inputs; calculated charges are not verified amounts paid. |
-| TOOL-10 | `weekly_complaints(week_start)` | `WeeklyResult` from published canonical cases, member lineage and weekly SQL views. Prepare source-backed guide-gap metrics only where facts permit. |
-| TOOL-11 | `retrieve_evidence(query, category, resolved_order=None)` | Merge exact/category/keyword hits with optional semantic top-k, filtered by source/batch and verified identity. Embeddings use the same model/dimension at index and query time. |
-| TOOL-12 | `assess_resolution(case_context, evidence, policy)` | Deterministic policy/charge checks, missing evidence, approval requirement and corporate-month counts; no universal source hierarchy. |
-| TOOL-13 | `answer_complaint(session_state, evidence, assessment)` | Masked context → answer model → claim/citation/PII checks; emit `ComplaintResult` with limitations or abstention. |
-| TOOL-14 | Session load/save interface | Persist messages, selected candidates, workflow, evidence/version references, conflicts, recommendations, citations, usage and safe errors; isolate sessions and restore without recomputation. |
+| ID | Service / proposed inputs | Result / responsibility | Code status |
+|---|---|---|---|
+| TOOL-05 | `resolve_order(order_number, received_at, system_hint=None, contact_context=None)` | Candidate list or verified composite identity; exclude orders created after the complaint and preserve reasons. Contact/case-log links are evidence, not automatic matches. | ✅ implemented (C, `backend/api_service/sql_provider.py` — live MySQL `MySqlProvider`; PR #17; contact_context not used as automatic match) |
+| TOOL-06 | `get_delivery_history(system_version, order_id)` | Latest exported attempt with delivery/driver citations; retain the established service name but explicitly state that earlier attempts/counts are unavailable. | ⏳ pending (B) |
+| TOOL-07 | `get_gps_window(driver_id, start_utc, end_utc)` | Cited driver/time pings with raw epoch, normalised time and alignment assumptions; distance requires a supported location reference. | ⏳ pending (B) |
+| TOOL-08 | `get_pod(system_version, order_id)` | File-loading/identity adapter over TOOL-03; preserve extraction failure, identity conflicts and source locators. | ✅ implemented (C — `EvidenceService._pod` over TOOL-03 with manifest-hash verification) |
+| TOOL-09 | `get_rate(system_version, order_id, on_date)` | TOOL-04 plus reviewed town/price mapping, standard service, CBD timing, calendar checks, GST and applicable COD fees. Return a calculation breakdown and missing inputs; calculated charges are not verified amounts paid. | ⏳ pending (B/A inputs; rate card exists via TOOL-04) |
+| TOOL-10 | `weekly_complaints(week_start)` | `WeeklyResult` from published canonical cases, member lineage and weekly SQL views. Prepare source-backed guide-gap metrics only where facts permit. | 🚧 boundary only (C — `WeeklySource` + HTTP-04/05; aggregates pending B) |
+| TOOL-11 | `retrieve_evidence(query, category, resolved_order=None)` | Merge exact/category/keyword hits with optional semantic top-k, filtered by source/batch and verified identity. Embeddings use the same model/dimension at index and query time. | ⏳ pending (A components exist separately; merge service not built) |
+| TOOL-12 | `assess_resolution(case_context, evidence, policy)` | Deterministic policy/charge checks, missing evidence, approval requirement and corporate-month counts; no universal source hierarchy. | ⏳ pending (C) |
+| TOOL-13 | `answer_complaint(session_state, evidence, assessment)` | Masked context → answer model → claim/citation/PII checks; emit `ComplaintResult` with limitations or abstention. | ⏳ pending (C) |
+| TOOL-14 | Session load/save interface | Persist messages, selected candidates, workflow, evidence/version references, conflicts, recommendations, citations, usage and safe errors; isolate sessions and restore without recomputation. | ✅ implemented (C — SQLite `SessionStore` with compare-and-swap, recovery without reruns) |
 
 All source joins and arithmetic are Python/SQL operations. Missing GPS alignment, approval records, declared value, proof of purchase, photos or prior attempts stay unknown; the model must not fill these gaps.
 

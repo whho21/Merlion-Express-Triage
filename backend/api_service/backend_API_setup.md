@@ -232,7 +232,7 @@ python -m evals.complaint_api_starter
 
 In PowerShell use `.\.venv\Scripts\python.exe` in place of `python` if the environment is not activated. Existing ingestion checks remain available separately: `python -m unittest discover -s backend/unstructured/tests -t .`.
 
-The complaint/session increment implements HTTP-01–03 and health from the [API catalog](../../docs/02-Design/api-catalog_v0.9.0.md). Live structured lookup, full rate/policy assessment, answer-model orchestration and weekly reporting remain pending. Existing extraction behaviour is unchanged. See the [implementation handoff](../../docs/03-Handoffs/John_2026-11-17-complaint-session-api.md) for the provider contract, decisions and actual verification results.
+The complaint/session increment implements HTTP-01–03 and health from the [API catalog](../../docs/02-Design/api-catalog_v0.9.1.md). Live structured lookup, full rate/policy assessment, answer-model orchestration and weekly reporting remain pending. Existing extraction behaviour is unchanged. See the [implementation handoff](../../docs/03-Handoffs/John_2026-11-17-complaint-session-api.md) for the provider contract, decisions and actual verification results.
 
 Validation on macOS: focused API/launcher tests and isolated real Uvicorn/Vite startup, prerequisite checks, occupied-port rejection, Ctrl+C cleanup, live-mode blocking and development-reload cleanup passed. Native PowerShell/WSL execution and a real Docker/MySQL startup were not run here; database start/probe logic was checked with controlled test doubles.
 

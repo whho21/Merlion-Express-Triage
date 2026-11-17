@@ -11,7 +11,7 @@
 
 ## Delivered scope
 
-Ref: Read `docs/02-Design/api-catalog_v0.9.0.md` sections 2–4, 6–8; `frontend-ui-contract-draft.md`; `contracts_2026-11-16.md`.
+Ref: Read `docs/02-Design/api-catalog_v0.9.1.md` sections 2–4, 6–8; `frontend-ui-contract-draft.md`; `contracts_2026-11-16.md`.
 
 HTTP-01 `POST /api/complaints`, HTTP-02 `POST /api/sessions/{session_id}/messages` and HTTP-03 `GET /api/sessions/{session_id}` are implemented alongside health. They use typed contracts, fresh request IDs, opaque session IDs, SQLite snapshots, source/candidate checks, safe errors and bounded tool calls. Session recovery survives a real process restart and does not rerun tools.
 
@@ -21,7 +21,7 @@ This is a staged complaint API, not completed live triage. B's production struct
 
 ## Files and requirements coverage
 
-Source requirements: [implementation plan](John_2026-11-17-complaint-session-api-plan.md), [API catalog](../02-Design/api-catalog_v0.9.0.md) HTTP-01–03 / TOOL-05,08,14 / sections 3,6–8, the frontend contract, and 17 Nov API/mock, guide and PR11 handoffs.
+Source requirements: [implementation plan](John_2026-11-17-complaint-session-api-plan.md), [API catalog](../02-Design/api-catalog_v0.9.1.md) HTTP-01–03 / TOOL-05,08,14 / sections 3,6–8, the frontend contract, and 17 Nov API/mock, guide and PR11 handoffs.
 
 | ID | Implementation | Executed checks / limits |
 |---|---|---|
