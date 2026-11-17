@@ -1,0 +1,286 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 1320px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.h1 {
+  font-size: var(--text-2xl);
+  font-weight: 750;
+  color: var(--brand-900);
+}
+
+.h3 {
+  font-size: var(--text-md);
+  font-weight: 650;
+  margin-bottom: var(--space-2);
+}
+
+.lede {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.history {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.history summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* weekly */
+.filterBar {
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.weekPicker {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.weekPicker select {
+  padding: 7px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  font-weight: 600;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-size: var(--text-sm);
+}
+
+.chipOn {
+  border-color: var(--brand-700);
+  background: var(--brand-100);
+  font-weight: 650;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.toggle {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: var(--text-sm);
+  margin-left: auto;
+}
+
+.mockNote {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: #6b4500;
+  background: #fff7e6;
+  border: 1px solid #f3d48f;
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+}
+
+.errorBox {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid #efc3c2;
+  background: #fcefee;
+}
+
+.skeleton {
+  padding: var(--space-8);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.weekly {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: opacity 150ms;
+}
+
+.dim {
+  opacity: 0.55;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.kpi {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpi_warn {
+  border-color: #f3d48f;
+  background: #fffaf0;
+}
+
+.kpi_neutral {
+  background: var(--surface-2);
+}
+
+.kpiLabel {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.kpiRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.kpiValue {
+  font-size: 28px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.kpiSub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 1100px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+}
+
+.defs {
+  padding: var(--space-5);
+}
+
+.defs dl {
+  margin: 0 0 var(--space-4);
+}
+
+.defRow {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-3);
+  padding: 6px 0;
+  border-bottom: 1px dotted var(--border);
+  font-size: var(--text-sm);
+}
+
+.defRow dt {
+  font-weight: 650;
+}
+
+.defRow dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.limitList {
+  margin: 0;
+  padding-left: 18px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* how it works */
+.pipeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--space-3);
+}
+
+.pipeStep {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.pipeStep p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.pipeNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand-700);
+  color: #fff;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  font-size: var(--text-sm);
+}
+
+.pipeSrc {
+  font-size: 11px;
+  color: var(--brand-700);
+  background: var(--brand-100);
+  border-radius: 4px;
+  padding: 2px 6px;
+  align-self: flex-start;
+}
