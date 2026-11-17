@@ -20,7 +20,7 @@ The course submission repository is `https://github.com/fde-sctp-aieng-FT-Cohort
 | `../00-Biz_Requirements/client_qa.md` | Draft/sent questions, actual replies and resulting rules |
 | `../02-Design/contracts.md` | Minimum tool, API, session, telemetry and evaluation contracts |
 
-Local inspection baseline: `c0b32e5` plus current documentation changes on 16 Nov. React/Vite scaffold and MySQL Compose configuration exist; SQL seeding instructions are in `scripts/seed_sql_data.md`. `backend/`, `database/` and `evals/` remain placeholders. Do not describe proposed services or checks as implemented.
+Local inspection baseline: `c0b32e5` plus current documentation changes on 16 Nov. React/Vite scaffold and MySQL Compose configuration exist; SQL seeding instructions are in `database/createdb_seed_sql_data.md`. `database/` contains setup documentation; `backend/` and `evals/` were placeholders at that baseline. Do not describe proposed services or checks as implemented.
 
 ### Released package and constraints
 
@@ -49,13 +49,13 @@ E starts with count/setup checks and a small runner that loads synthetic cases, 
 
 C retains the API and framework decisions to avoid splitting critical backend responsibilities. Keep routes thin and the MVP narrow. A/B implement their own tools, retries, provenance and telemetry; E compiles run evidence and spend summaries from those events. Jeffrey leads the business narrative, presentation and client-facing explanation, and helps frame client questions. John validates technical wording, sends/logs official client emails, coordinates delivery/submission and leads technical Q&A. A/B supply source facts; E supports rehearsal and recovery. Do not assume business experience supplies logistics policy: rules still require client/source authority. Review progress daily and reassign a bounded task when needed.
 
-Table-level delivery refinement: the [database design](../02-Design/database-design_2026-11-16.md#3-complete-proposed-data-table-inventory) assigns both creation and loading to each table owner. A owns extraction-derived table migrations/loaders, B operational/case/GPS/zone tables and schema coordination, C shared source/run metadata and batch orchestration, and E the sourced calendar. B consumes A’s loaded records rather than inheriting every loader. Every owner provides teammate-runnable fresh setup and periodic-batch procedures; E verifies them. These SQL loaders remain pending in the reviewed code.
+Table-level delivery refinement: the [database design](../02-Design/database-design_2026-11-16.md#3-complete-proposed-data-table-inventory) retains every final-state table with a phase/owner/status. Current SQL scope is B's `raw_case_log`, `clean_cases`, `clean_case_members` and two weekly reporting views, alongside preserved instructor tables. Ralph retains file-backed evidence tools; C uses versioned manifests for orchestration; E maintains calendar lookup files and verifies integration. The other fourteen application tables are future enhancements, not checkpoint dependencies. Current SQL owners supply creation/loading and all file-tool owners supply repeatable batch processing.
 
 Database naming: one `merlion_express` database. Keep instructor `orders`, `drivers`, `deliveries` unchanged; prefix every new table `raw_`, `clean_` or `meta_` and reporting views `view_`. See the database inventory for owner/status and exact names; upstream extraction filenames/tool contracts are unchanged.
 
 ### Shared local setup and working rules
 
-1. All five download the approved package, follow [SQL seeding instructions](../../scripts/seed_sql_data.md), and verify the same raw table counts. Docker is the main path; an existing local MySQL is supported. E records confirmations without client records or credentials.
+1. All five download the approved package, follow [SQL seeding instructions](../../database/createdb_seed_sql_data.md), and verify the same raw table counts. Docker is the main path; an existing local MySQL is supported. E records confirmations without client records or credentials.
 2. A/B maintain the common ingestion/extraction procedure; everyone runs it. Reuse approved local caches to avoid five duplicate paid extraction runs; agree secure distribution and endpoint rules before sharing derived client data.
 3. One named owner coordinates full paid extraction, caches by source/configuration and records cost. Do not share the class key through Git, chat logs or screenshots.
 4. Work on short-lived named branches; peer review and merge daily. Each member makes substantive commits under their own account; pairing uses co-author attribution.
@@ -94,9 +94,9 @@ Implement email/guide parsing, POD OCR and rate-card extraction with original fi
 
 ### B — structured data, identity and analytics
 
-Use Python/pandas for profiling and explicit, documented transformations; preserve raw records. Create cleaned keys using actual `(system_version, order_id)` and separate delivery-event keys. Preserve postal codes as text and raw timestamps with proven timezone assumptions. Build controlled rebuilds or keyed upserts, reconcile loaded/rejected/duplicate counts, index driver/time and source/order lookups, and ingest A's extracted records with locators and uncertainty.
+Use Python/pandas for profiling and explicit, documented transformations; preserve raw records. Create cleaned keys using actual `(system_version, order_id)` and separate delivery-event keys. Preserve postal codes as text and raw timestamps with proven timezone assumptions. Build controlled rebuilds or keyed upserts, reconcile loaded/rejected/duplicate counts, use appropriate driver/time and source/order lookups, and integrate A's file-backed tools with locators and uncertainty. Current MySQL additions are the three case tables and two views; migrating A's evidence or other sources to SQL is future enhancement work.
 
-Implement candidate lookup, `get_delivery_history`, `get_pod`, `get_gps_window` and date-sensitive `get_rate`. Preserve ambiguous candidates, absent records and query failures distinctly. Do not infer complete attempt history from the single event per order in this export or apply April pricing to earlier orders without authority.
+Implement candidate lookup and `get_delivery_history`; integrate `get_pod`, `get_gps_window` and date-sensitive `get_rate` through validated SQL/file-backed adapters as appropriate. Preserve ambiguous candidates, absent records and query failures distinctly. Do not infer complete attempt history from the single event per order in this export or apply April pricing to earlier orders without authority.
 
 After the cited complaint flow works, implement `weekly_complaints` using the approved case source, reporting week/timezone, deduplication and driver/zone definitions. Missing case log or zone mapping produces a labelled limitation; an email-based proxy requires explicit approval and must be clearly separate. Compile the one-page data quality report from all owners.
 

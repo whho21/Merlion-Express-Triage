@@ -1,6 +1,6 @@
-# Seed local MySQL data
+# Create database and seed local MySQL data
 
-Run all commands from the **project root, `team2_merlion_express/`**, which contains `docker-compose.yml`, `data/` and `scripts/`. If your terminal is currently inside `scripts/`, first run `cd ..`. The location of this guide does not change the commands' working directory.
+Run all commands from the **project root, `team2_merlion_express/`**, which contains `docker-compose.yml`, `data/` and `database/`. If your terminal is currently inside `database/`, first run `cd ..`. The location of this guide does not change the commands' working directory.
 
 The dump creates and selects `merlion_express`. **Re-importing replaces the tables defined in the dump.**
 

@@ -1,20 +1,25 @@
 # Data audit — released package
 
-**Checked:** 16 Nov 2026, SGT. **Status:** Initial technical sanity review; full semantic audit remains open.
-**Package root:** `data/team2_merlion_express_package/` (local, Git-ignored).
-**Owners:** A/Ralph (unstructured), B/Jenn Fang (structured); E/Wai Hong reconciles package/setup checks; C/John reviews cross-source assumptions.
+- **Checked:** 16 Nov 2026, SGT.
+- **Status:** Initial technical sanity review; full semantic audit remains open.
+- **Package root:** `data/team2_merlion_express_package/` (local, Git-ignored).
+- **Owners:** 
+  - A/Ralph (unstructured), 
+  - B/Jenn Fang (structured); 
+  - E/Wai Hong reconciles package/setup checks; 
+  - C/John reviews cross-source assumptions.
 
 ## Method and limits
 
-Read the package brief and both briefing PDF pages. Read the full SQL dump, all GPS JSONL lines and all 90 email text files. Opened all 81 JPEG files with Pillow integrity verification; visually inspected the rate card. Parsed the SQL CREATE/INSERT statements into an in-memory SQLite database for aggregate checks; no client records were committed or written into a replacement dataset. This is not evidence that a developer's running MySQL instance has loaded correctly, nor a MySQL compatibility/performance test. Each developer must independently check local MySQL using [seeding instructions](../../scripts/seed_sql_data.md).
+Read the package brief and both briefing PDF pages. Read the full SQL dump, all GPS JSONL lines and all 90 email text files. Opened all 81 JPEG files with Pillow integrity verification; visually inspected the rate card. Parsed the SQL CREATE/INSERT statements into an in-memory SQLite database for aggregate checks; no client records were committed or written into a replacement dataset. This is not evidence that a developer's running MySQL instance has loaded correctly, nor a MySQL compatibility/performance test. Each developer must independently check local MySQL using [seeding instructions](../../database/createdb_seed_sql_data.md).
 
 JPEG decoding is not a full visual/OCR audit of every POD. Email readability is not successful order resolution. Epoch conversion alone does not establish the business timezone or a correction. Retain these distinctions when reporting checkpoint completion.
 
 ## Inventory and observed counts
 
-| Source relative to package root | Observed | Check completed | Remaining |
+| Source relative to package root `{DATA_PACKAGE_PATH}` -| Observed | Check completed | Remaining |
 |---|---:|---|---|
-| `sql/merlion_ops.sql` | 1 dump; 3 tables | Parsed; aggregate key/join/null checks below | Validate native MySQL loads, indexes, cleaning and repeatability |
+| `/sql/merlion_ops.sql` | 1 dump; 3 tables | Parsed; aggregate key/join/null checks below | Validate native MySQL loads, indexes, cleaning and repeatability |
 | `logs/gps_pings_sample.jsonl` | 60,000 records | 0 JSON parse failures; common keys `driver`, `ts`, `lat`, `lon`, `speed_kmh` | Time alignment, duplicate pings, driver/time coverage and relevance |
 | `docs/complaint_emails/` | 90 text files | All readable, non-empty and contain a Date header | Semantic extraction, identities, duplicates, complaint dates and attribution |
 | `images/proof_of_delivery/` | 80 JPEGs | All decode; filenames all identify v1; all filename order keys match orders | Visual/OCR accuracy, source conflicts, coverage expectations |
@@ -42,7 +47,7 @@ There are 175 non-OS-metadata files. Ignore `.DS_Store` when reconciling busines
 | Orders without a delivery row | 1,031 | Investigate status/coverage; do not label all as failed or corrupt |
 | Multiple delivery rows per composite order key | 0 | Current export provides at most one event; cannot infer a complete attempt history |
 | Duplicate driver-name groups | 6 | Driver names are not reliable unique identifiers |
-| Delivery outcomes | 21,865 delivered; 2,177 failed attempts; 760 returned | Outcomes are not equivalent to complaint counts |
+| Delivery outcomes | 21,865 delivered; 2,177 failed atte mpts; 760 returned | Outcomes are not equivalent to complaint counts |
 | Orders before supplied rate-card effective date | 17,195 | Earlier pricing unsupported without clarification; Q03 |
 | Explicit zone/service-tier columns | Not present in supplied SQL tables | Do not infer a business mapping without an agreed rule; Q04 |
 

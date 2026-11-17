@@ -22,6 +22,7 @@ docs/
 | Doc | Location | Purpose |
 | --- | --- | --- |
 | [Documentation index](README.md) | `docs/` | Navigate the project documentation. |
+| [Database setup](../database/createdb_seed_sql_data.md) | `database/` | Create/import local MySQL data and verify tables and counts. |
 | [Client brief](00-Biz_Requirements/CLIENT_BRIEF.md) | `00-Biz_Requirements/` | Client requirements, constraints and engagement rules. |
 | [Client Q&A](00-Biz_Requirements/client_qa.md) | `00-Biz_Requirements/` | Track questions, client responses and project impacts. |
 | [Team plan v0.5](01-Plans_Status/Capstone_TEAM_PLAN_v0.5.md) | `01-Plans_Status/` | Plan workstreams, responsibilities and milestones. |
@@ -38,6 +39,7 @@ docs/
 | [Hosting options](02-Design/hosting-options.md) | `02-Design/` | Compare local course delivery and portfolio hosting; proposed deployment and migration steps. |
 | [Technical contracts](02-Design/contracts.md) | `02-Design/` | Document agreed interfaces and data contracts. |
 | [Handoff template](03-Handoffs/Name_YYYY-MM-DD-topic.md) | `03-Handoffs/` | Record handoff scope, remaining work and next steps. |
+| [John → Jeffrey: API/mock profiles](03-Handoffs/John_2026-11-17-Jeffrey-api-mock-profiles.md) | `03-Handoffs/` | Requested API source selection, npm profiles and retry fixes for D's next code push. |
 | [Data quality report](04-Testing_Evals/data_quality_report.md) | `04-Testing_Evals/` | Report data quality findings and handling. |
 | [Checkpoints](05-Reviews/CHECKPOINTS.md) | `05-Reviews/` | Track checkpoint requirements and milestones. |
 | [Harness checklist](05-Reviews/HARNESS_CHECKLIST.md) | `05-Reviews/` | Track harness requirements and evidence. |
