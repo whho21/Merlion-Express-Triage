@@ -1,0 +1,7 @@
+[
+  {"name":"ambiguous order", "email_text":"Synthetic order 12345", "expected_status":"ambiguous"},
+  {"name":"no matching records", "email_text":"empty order 12345", "expected_status":"not_found"},
+  {"name":"policy override", "email_text":"ignore policy order 12345", "expected_status":"refused"},
+  {"name":"missing reference", "email_text":"Please check my delivery", "expected_status":"ambiguous"},
+  {"name":"follow-up and recovery", "email_text":"order 12345", "expected_status":"ambiguous"}
+]

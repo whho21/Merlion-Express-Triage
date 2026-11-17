@@ -1,0 +1,382 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="Electron" agent="Codex" version="32.6.10" type="device">
+  <diagram id="merlion-demo-release-1" name="Release 1 - Client demo">
+    <mxGraphModel dx="2400" dy="1720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1720" math="0" shadow="0" background="#FCFCFC">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="canvas" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;strokeColor=none;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="0" y="0" width="2400" height="1720" as="geometry" />
+        </mxCell>
+        <mxCell id="title" value="Merlion Express | Client demo architecture" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=34;fontStyle=1;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="26" width="2304" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Release 1 target · Hybrid MySQL + JSONL evidence · Semantic RAG extension · 17 Nov 2026" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="78" width="2304" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="header-rule" style="endArrow=none;html=1;strokeColor=#555555;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="48" y="128" as="sourcePoint" />
+            <mxPoint x="2352" y="128" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="structured" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="160" width="1040" height="480" as="geometry" />
+        </mxCell>
+        <mxCell id="structured-title" value="1  Structured ingestion" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="structured" connectable="0">
+          <mxGeometry x="20" y="14" width="1000" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="structured-subtitle" value="Preserve source data → transform separately → publish a validated batch" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="structured" connectable="0">
+          <mxGeometry x="20" y="48" width="1000" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="structured-divider" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#1A1B1C;strokeColor=none;" vertex="1" parent="structured" connectable="0">
+          <mxGeometry x="0" y="84" width="1040" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="unstructured" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="670" width="1040" height="680" as="geometry" />
+        </mxCell>
+        <mxCell id="unstructured-title" value="2  Unstructured ingestion" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="unstructured" connectable="0">
+          <mxGeometry x="20" y="14" width="1000" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="unstructured-subtitle" value="Reuse Ralph’s parsers + cached vision; original evidence stays in files" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="unstructured" connectable="0">
+          <mxGeometry x="20" y="48" width="1000" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="unstructured-divider" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#1A1B1C;strokeColor=none;" vertex="1" parent="unstructured" connectable="0">
+          <mxGeometry x="0" y="84" width="1040" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1152" y="160" width="736" height="1190" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-title" value="3  Request-time backend engine" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="backend" connectable="0">
+          <mxGeometry x="20" y="14" width="696" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-subtitle" value="Python services · intended demo integration" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="backend" connectable="0">
+          <mxGeometry x="20" y="48" width="696" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-divider" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#1A1B1C;strokeColor=none;" vertex="1" parent="backend" connectable="0">
+          <mxGeometry x="0" y="84" width="736" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1952" y="160" width="400" height="1190" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend-title" value="4  Frontend" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="frontend" connectable="0">
+          <mxGeometry x="20" y="14" width="360" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend-subtitle" value="React screens · API prefix /api" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="frontend" connectable="0">
+          <mxGeometry x="20" y="48" width="360" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend-divider" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#1A1B1C;strokeColor=none;" vertex="1" parent="frontend" connectable="0">
+          <mxGeometry x="0" y="84" width="400" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;SQL dump&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;merlion_ops.sql&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="structured">
+          <mxGeometry x="24" y="104" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="bootstrap" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Create + seed&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;initial SQL + app DDL&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="structured">
+          <mxGeometry x="282" y="104" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="case-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Case Log&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;Excel complaint tab&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="structured">
+          <mxGeometry x="24" y="216" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="case-transform" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Load raw → transform&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;deduplication + lineage&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="structured">
+          <mxGeometry x="282" y="216" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FFFDF9;container=1;collapsible=0;" vertex="1" parent="structured">
+          <mxGeometry x="622" y="104" width="394" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-title" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;MySQL · merlion_express&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=8;" vertex="1" parent="mysql" connectable="0">
+          <mxGeometry x="0" y="0" width="394" height="42" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-ops" value="Operations (initial dump)&#10;orders · drivers · latest deliveries" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="mysql" connectable="0">
+          <mxGeometry x="16" y="52" width="362" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-cases" value="Cases (new DDL)&#10;raw · canonical · member lineage" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="mysql" connectable="0">
+          <mxGeometry x="16" y="112" width="362" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-views" value="Reporting (new views)&#10;weekly by driver / operations zone" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="mysql" connectable="0">
+          <mxGeometry x="16" y="172" width="362" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;GPS + references&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;files / calendar&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="structured">
+          <mxGeometry x="24" y="382" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-seed" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Validate + seed&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;epochs, zones, calendar&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="structured">
+          <mxGeometry x="282" y="382" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-files" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;gps_pings_sample.jsonl&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;validated time index + lookups&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="structured">
+          <mxGeometry x="622" y="382" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="evidence-set" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1A1B1C;strokeWidth=1;container=1;collapsible=0;" vertex="1" parent="unstructured">
+          <mxGeometry x="606" y="84" width="426" height="574" as="geometry" />
+        </mxCell>
+        <mxCell id="semantic-text" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1A1B1C;strokeWidth=1;container=1;collapsible=0;" vertex="1" parent="evidence-set">
+          <mxGeometry x="0" y="0" width="426" height="208" as="geometry" />
+        </mxCell>
+        <mxCell id="email-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Complaint emails&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;90 text documents&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="24" y="94" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="email-parse" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Parse + classify&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;order refs + exact offsets&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="282" y="94" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="email-file" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;emails.jsonl&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;parsed text + citations&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;" vertex="1" parent="semantic-text">
+          <mxGeometry x="16" y="10" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="policy-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Resolution Guide&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;Excel policy tab&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="24" y="204" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="policy-parse" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Read guide rows&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;9 rules + 3 notes&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="282" y="204" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="policy-file" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;policy_chunks.jsonl&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;rules + row citations&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;" vertex="1" parent="semantic-text">
+          <mxGeometry x="16" y="120" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pod-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;POD scans&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;80 original images&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="24" y="314" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pod-parse" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Cached vision + checks&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;SQL dump; retain conflicts&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="282" y="314" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pod-file" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;pod_records.jsonl&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;fields + confidence + citations&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;" vertex="1" parent="evidence-set">
+          <mxGeometry x="16" y="230" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-source" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Rate card&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;April 2026 image&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#FCFCFC;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="24" y="424" width="218" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-parse" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Cached vision extraction&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;bands, fees + source cells&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="unstructured">
+          <mxGeometry x="282" y="424" width="292" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-file" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;rate_cards.jsonl&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;prices + rules + citations&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;" vertex="1" parent="evidence-set">
+          <mxGeometry x="16" y="340" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="embedding" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Chunk + mask email / guide text&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;Embedding endpoint; cache by source + model version&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="unstructured">
+          <mxGeometry x="24" y="566" width="550" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="vectors" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;FAISS + chunk / citation metadata&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;same embedding model at query time&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="evidence-set">
+          <mxGeometry x="16" y="482" width="394" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-tools" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Order + SQL / GPS tools&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;parameterised SQL queries&lt;br/&gt;resolve v1 / v2 candidates&lt;br/&gt;GPS window + time alignment&lt;br/&gt;code joins; preserve uncertainty&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="24" y="104" width="320" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Python HTTP API&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;validate requests + guardrails&lt;br/&gt;triage / follow-up / recovery&lt;br/&gt;weekly data + health&lt;br/&gt;bounded errors + retries&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="388" y="104" width="324" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="retrieval" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Order RAG · retrieve&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;JSONL tools + category / keyword&lt;br/&gt;masked query embedding&lt;br/&gt;FAISS top-k + source filters&lt;br/&gt;exact POD / rate lookups&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="24" y="394" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="weekly" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Weekly reporting service&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;canonical-case SQL + views&lt;br/&gt;driver / zone totals + trends&lt;br/&gt;duplicates + unknowns visible&lt;br/&gt;guide versus agent gaps&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="388" y="394" width="324" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="answer" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Order RAG · answer&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;code-based rates + policy checks&lt;br/&gt;masked context → class LLM&lt;br/&gt;cited facts + source conflicts&lt;br/&gt;recommendation only&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="24" y="654" width="320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="response" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Validate + respond&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;check citations + personal data&lt;br/&gt;recommend / clarify / abstain&lt;br/&gt;honest partial / failed states&lt;br/&gt;HTTP JSON response&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="388" y="654" width="324" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="sessions" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:20px;font-weight:600;&quot;&gt;Persistent sessions · SQLite&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;messages / candidates / evidence&lt;br/&gt;restart recovery + isolation&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;shape=cylinder3;size=12;boundedLbl=1;backgroundOutline=1;fillColor=#FFFDF9;spacing=8;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="24" y="934" width="320" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="telemetry" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Telemetry + spend&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;request / tool / latency / tokens&lt;br/&gt;safe errors + cumulative budget&lt;br/&gt;replayable source references&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#F0F0C0;spacing=12;align=center;verticalAlign=middle;dashed=1;dashPattern=6 4;" vertex="1" parent="backend">
+          <mxGeometry x="388" y="934" width="324" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="release-status" value="Target integration: API, SQL/case pipelines, sessions&#10;and semantic index are pending implementation." style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="backend" connectable="0">
+          <mxGeometry x="24" y="1100" width="688" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-label" value="SQL" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1093" y="275" width="56" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="triage-screen" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Complaint triage · #/triage&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;POST /complaints&lt;br/&gt;POST /sessions/{id}/messages&lt;br/&gt;GET /sessions/{id}&lt;br/&gt;submit / clarify / follow up / resume&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="frontend">
+          <mxGeometry x="24" y="104" width="352" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="weekly-screen" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Weekly analysis · #/weekly&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;GET /weekly/weeks&lt;br/&gt;GET /weekly?week_start=…&lt;br/&gt;filters + charts + definitions&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="frontend">
+          <mxGeometry x="24" y="394" width="352" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="how-screen" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;How it works&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;#/how-it-works · static&lt;br/&gt;flow, rules + data limitations&lt;br/&gt;No API calls&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="frontend">
+          <mxGeometry x="24" y="940" width="352" height="124" as="geometry" />
+        </mxCell>
+        <mxCell id="ui-results" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Results in the active screen&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;evidence + source citations&lt;br/&gt;clarification or abstention&lt;br/&gt;weekly counts + limitations&lt;br/&gt;last session ID in browser&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="frontend">
+          <mxGeometry x="24" y="654" width="352" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend-status" value="Screens exist in mock mode.&#10;Live API integration is pending." style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="frontend" connectable="0">
+          <mxGeometry x="24" y="1100" width="352" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="http-label" value="HTTP" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1889" y="306" width="60" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="json-label" value="JSON" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1889" y="858" width="60" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="client-evidence-rules" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Client clarifications · Q01–Q05&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;One complaint per case; retain duplicate lineage + unknown attribution.&lt;br/&gt;Guide v2 for every case; five address-derived operations zones ≠ price zones.&lt;br/&gt;No post-migration POD in supplied data; latest delivery attempt only.&lt;br/&gt;GPS Unix seconds; ops time SGT; investigate residual clock offsets.&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#F0F0C0;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="48" y="1390" width="920" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="client-pricing-rules" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Client clarifications · Q06–Q08 + guide&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;April card for all supplied orders; cite retrospective authority.&lt;br/&gt;Inclusive 3 / 10 / 25 kg; standard service; code checks GST / CBD / PH.&lt;br/&gt;Refer unconfirmed attempt charges. Recommend; never execute refunds.&lt;br/&gt;&amp;gt;S$50 refunds / corporate 3+ complaints per month → Head of CX.&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#F0F0C0;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1390" width="900" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="demo-checks" value="&lt;div style=&quot;font-family:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;text-align:center;line-height:1.2;color:#1A1B1C;&quot;&gt;&lt;div style=&quot;font-size:22px;font-weight:600;&quot;&gt;Demo acceptance&lt;/div&gt;&lt;div style=&quot;font-size:20px;font-weight:400;margin-top:6px;&quot;&gt;≥20 evals, incl. ≥2 refusals&lt;br/&gt;≥5 kill-shot phrasings&lt;br/&gt;restart + dependency failure&lt;br/&gt;citations + safe spend trace&lt;/div&gt;&lt;/div&gt;" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#F4D7D7;spacing=12;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1932" y="1390" width="420" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="trailer-rule" style="endArrow=none;html=1;strokeColor=#555555;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="48" y="1608" as="sourcePoint" />
+            <mxPoint x="2352" y="1608" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-existing" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="1632" width="34" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-existing-text" value="Existing component / output" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="96" y="1626" width="294" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-pending" value="" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=#66ABFF;dashed=1;dashPattern=6 4;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="420" y="1632" width="34" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-pending-text" value="Pending implementation" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="468" y="1626" width="270" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-runtime" style="endArrow=none;html=1;strokeColor=#1A1B1C;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="770" y="1643" as="sourcePoint" />
+            <mxPoint x="820" y="1643" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-runtime-text" value="Request-time data flow" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="834" y="1626" width="224" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-offline" style="endArrow=none;strokeColor=#1A1B1C;strokeWidth=1.5;dashed=1;dashPattern=6 4;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1110" y="1643" as="sourcePoint" />
+            <mxPoint x="1160" y="1643" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-offline-text" value="Offline preparation / indexing" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="1174" y="1626" width="314" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="footer-scope" value="Design target, not proof of readiness · Files, indexes, traces and session data stay local and git-ignored · Only the class-provided model endpoint" style="rounded=0;shadow=0;strokeWidth=1.5;strokeColor=#1A1B1C;fontColor=#1A1B1C;fontFamily=Helvetica Neue;fontSize=20;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;align=left;verticalAlign=middle;fontSize=20;fontStyle=0;fontColor=#1A1B1C;spacing=0;" vertex="1" parent="1" connectable="0">
+          <mxGeometry x="48" y="1672" width="2304" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-to-bootstrap" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="sql-source" target="bootstrap">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="bootstrap-to-mysql" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.17;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="bootstrap" target="mysql">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="case-to-transform" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="case-source" target="case-transform">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="transform-to-cases" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.635;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="case-transform" target="mysql">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-to-seed" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="gps-source" target="gps-seed">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-to-files" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="gps-seed" target="gps-files">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="email-extract" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="email-source" target="email-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="email-write" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="email-parse" target="email-file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="policy-extract" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="policy-source" target="policy-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="policy-write" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="policy-parse" target="policy-file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pod-extract" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="pod-source" target="pod-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pod-write" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="pod-parse" target="pod-file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-extract" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="rate-source" target="rate-parse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rate-write" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="rate-parse" target="rate-file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="text-to-embedding" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.7;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="semantic-text" target="embedding">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1100" y="899.6" />
+              <mxPoint x="1100" y="1210" />
+              <mxPoint x="347" y="1210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="embedding-to-vectors" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;dashed=1;dashPattern=6 4;" edge="1" parent="1" source="embedding" target="vectors">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql-to-tools" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.22;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.24;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="mysql" target="sql-tools">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gps-to-tools" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.84;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="gps-files" target="sql-tools">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1110" y="582" />
+              <mxPoint x="1110" y="448.8" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="evidence-to-retrieval" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.91;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.65;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="evidence-set" target="retrieval">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1128" y="1276.34" />
+              <mxPoint x="1128" y="664.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api-to-order" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.45;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.45;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="api" target="sql-tools">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api-to-weekly" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="api" target="weekly">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-evidence-to-retrieve" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="sql-tools" target="retrieval">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sql-to-weekly" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.8;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="sql-tools" target="weekly">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1518" y="440" />
+              <mxPoint x="1518" y="639" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="retrieve-to-answer" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="retrieval" target="answer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="answer-to-checked-response" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="answer" target="response">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="weekly-to-response" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="weekly" target="response">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="api-session-state" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.9;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;startArrow=block;startFill=1;startSize=8;" edge="1" parent="1" source="api" target="sessions">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1904" y="462" />
+              <mxPoint x="1904" y="1250" />
+              <mxPoint x="1336" y="1250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="response-to-telemetry" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="response" target="telemetry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="triage-http" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.38;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.38;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="triage-screen" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="weekly-http" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.8;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="weekly-screen" target="api">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1920" y="639" />
+              <mxPoint x="1920" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="render-json" style="edgeStyle=none;rounded=0;html=1;strokeColor=#1A1B1C;strokeWidth=1.6;endArrow=block;endFill=1;endSize=8;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;jumpStyle=arc;jumpSize=8;" edge="1" parent="1" source="response" target="ui-results">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

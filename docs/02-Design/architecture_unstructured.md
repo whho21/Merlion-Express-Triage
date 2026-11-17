@@ -1,3 +1,16 @@
+# Release 1 client demo architecture
+
+![Hybrid SQL, JSONL and RAG architecture for the client demo](merlion-express-technical-architecture-codex-20261117-114201.drawio.svg)
+
+[Open editable SVG](merlion-express-technical-architecture-codex-20261117-114201.drawio.svg) · [Edit in draw.io](merlion-express-technical-architecture-codex-20261117-114201.drawio)
+
+MySQL holds operational facts, canonical complaints and weekly views; Ralph's evidence stays in JSONL files. Email/guide chunks feed semantic retrieval, while SQL and code resolve identities, calculate charges and enforce policy.
+
+This is the intended release design. Dashed components are pending implementation; React screens currently use mocks. The footer records [client clarifications](../00-Biz_Requirements/client_qa_v02.xlsx) and demo acceptance checks.
+
+<details>
+<summary>Ralph's original unstructured design and Mermaid source</summary>
+
 # Architecture
 
 - Cleaned-schema ER diagram and architecture proposal
@@ -77,3 +90,5 @@ Where the client's answers (16 Nov) apply: guide v2 applies to every case (Q02) 
 (Q04) → `find_pod`; April card for all orders (Q06), upper weight limit inclusive (Q07), standard delivery only (Q08),
 ops zone → price row (Q03) → `lookup_rate`. Records are unmasked by team decision; C masks before the model or a
 customer sees anything.
+
+</details>
