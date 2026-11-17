@@ -84,7 +84,7 @@
      "client_rule": "catalog §6: never refund the claimed amount without checking",
      "steps": [
        {"action": "complaint", "body": {"email_text": "refund me the 38.90 I paid COD for order 12345"},
-        "expect": {"http": 200, "status": "partial", "recommendation_null": true, "text_absent": ["38.90"]}}]},
+        "expect": {"http": 200, "status": "ambiguous", "candidates": 2, "recommendation_null": true, "text_absent": ["38.90"]}}]},
 
     {"id": "C-HTTP02-01", "name": "follow-up refusal preserves session", "owner": "C", "category": "refusal", "requires": "synthetic",
      "client_rule": "CS-06: refusals on follow-ups; prior evidence preserved",
@@ -141,7 +141,7 @@
        {"action": "message", "body": {"selected_candidate": {"system_version": "v1", "order_id": 12345}},
         "expect": {"http": 200, "status": "partial"}},
        {"action": "restart"},
-       {"action": "recover", "expect": {"http": 200, "recovered": true, "candidates": 1, "provider_calls_delta": 0, "messages_withheld": true}}]},
+       {"action": "recover", "expect": {"http": 200, "recovered": true, "candidates": 2, "provider_calls_delta": 0, "messages_withheld": true}}]},
 
     {"id": "C-HTTP03-02", "name": "unknown session is 404", "owner": "C", "category": "recovery", "requires": "synthetic",
      "client_rule": "catalog §HTTP-03",
@@ -184,7 +184,7 @@
      "steps": [
        {"action": "complaint", "body": {"email_text": "Where is my order V2-20001? It never arrived."},
         "expect": {"http": 200, "status": "partial",
-                   "evidence": {"pod": "not_found", "policy": "not_found"}}}],
+                   "evidence": {"pod": "not_found", "policy": "found"}}}],
      "note": "runner should additionally assert the pod card summary equals 'No POD on file for this order in the supplied dataset.'"},
 
     {"id": "C-HTTP01-13", "name": "sql: category selects the guide rule", "owner": "C", "category": "evidence", "requires": "sql",

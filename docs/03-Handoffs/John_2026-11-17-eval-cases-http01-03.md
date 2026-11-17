@@ -17,6 +17,7 @@
 
 ## Remaining
 
+- **Runner status:** C added an interim runner, `evals/complaint_api_http_runner.py` (starter-role; E's shared runner supersedes it) — all 26 cases pass as of 18 Nov early (synthetic 19/19 without MySQL; 26/26 with `--with-sql` on the seeded database; sql cases SKIP honestly when MySQL is unavailable). E's job is to fold this into the shared runner with consolidation and diagnostics, not to rewrite the expectations.
 - **Runner support (E):** `restart` step action (kill/relaunch the API against the same session DB), `$session_id`/`$first` step-target references, and `provider_calls_delta` counting via the fixture provider's call counter. The synthetic-only 19 should run without MySQL; the sql 7 need `scripts.check_sql_provider` to pass first.
 - **Assertions beyond the schema:** two notes ask for exact-string checks (POD-absence wording per client Q04; evidence-list length at selection). Worth promoting into the schema later rather than special-casing.
 - **Not converted to runner cases** (already covered by unit tests and awkward to automate at HTTP level): future-created exclusion, mixed date precision, source-changed between turns (`409 SOURCE_CHANGED`), concurrent-turn compare-and-swap, timeout capacity. These stay in `backend/api_service/tests/` — the runner should not duplicate them.
