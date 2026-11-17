@@ -21,7 +21,7 @@ pip install -r backend/unstructured/requirements.txt          # optional: faiss-
 python -m backend.unstructured.build_index                    # vector index (SQLite + FAISS); local embeddings, free
 python -m backend.unstructured.evals                          # A's 21 eval cases: PASS / FAIL / PENDING
 python -m backend.unstructured.ask                            # type a question, see the rule + emails and the search method
-python -m unittest discover -s backend/unstructured/tests -t .   # 89 unit tests, synthetic data, no network
+python -m unittest discover -s backend/unstructured/tests -t .   # 106 unit tests, synthetic data, no network
 ```
 
 The image run needs the **team** key: `OPENAI_API_KEY=` in this repo's own `.env` (from the team's NTULearn item).
@@ -46,12 +46,12 @@ record is `docs/04-Testing_Evals/api_spend.md`. First full run (16 Nov): 81 imag
 | `ratecard.py` | Rate-card prompt and parsing (bands, prices, surcharges, notes) and `lookup_rate` with the client's rules: April card applied retrospectively (Q06), upper limit inclusive (Q07), standard only (Q08), ops zone → price row (Q03). |
 | `extract_images.py` | Runs POD + rate-card extraction with cache, manifest, telemetry and SQL validation. |
 | `search.py` | `search_emails(query, order_number=None, *, mode)` and `search_policy(query="", effective_date=None, *, category=None, mode)` for C, with exact citations. `mode="hybrid"` (default) fuses keyword + vector ranks; falls back to keyword (labelled in `retrieval`) if the index or endpoint is unavailable. |
-| `vector_index.py` | SQLite (chunks, citations, embedding cache) + FAISS (vectors). Masked text is embedded; rebuilds embed only changes; refuses a stale index. Handoff: `docs/03-Handoffs/Ralph_2026-11-17-vector-index.md`. |
+| `vector_index.py` | SQLite (chunks, citations, embedding cache) + FAISS (vectors). Guarded text (no names/addresses) is embedded; rebuilds embed only changes; refuses a stale or damaged index (keyword fallback); files written atomically. Handoff: `docs/03-Handoffs/Ralph_2026-11-17-vector-index.md`. |
 | `build_index.py` | Builds the vector index from the ingest outputs and logs the spend. Default embeddings are local (`local_embed.py`); set `A_EMBED_MODEL=text-embedding-3-small` for the API model. |
 | `local_embed.py` | Free, offline embeddings with numpy: TF-IDF over words + character n-grams (typo-tolerant, no synonyms). |
 | `ask.py` | Try the search by hand (`python -m backend.unstructured.ask`). |
 | `evals.py` | Runs `evals/developer_a_cases.json`. |
-| `masking.py` | Shared helper for B/C/D: masks emails, NRIC, phones, unit numbers, postal codes, block numbers (not names). |
+| `masking.py` | Shared helper for B/C/D. `mask_text`: emails, NRIC, phones, unit numbers, postal codes, block numbers. `privacy_guard`: all of that plus street addresses and personal names; use it on any text sent to an AI endpoint. |
 
 Record shapes, envelopes and telemetry: `docs/02-Design/contracts.md` sections 2–6. Traps: `docs/05-Reviews/trap_list.md`.
 Limits and evidence for B/C/D: `docs/03-Handoffs/Ralph_2026-11-16-A-tools-evidence-limits.md`.

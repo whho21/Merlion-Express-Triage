@@ -18,8 +18,9 @@ API embedding model is one setting away (`A_EMBED_MODEL=text-embedding-3-small`)
   index so queries use the same transform. Handles typos and word forms; does **not** know synonyms.
 - Chunks are natural units: one per complaint email (subject + body) and one per Resolution Guide rule/note
   (90 + 12 = 102). No splitting or overlap: the longest chunk is ~310 characters.
-- **PDPA:** chunk text and the user's question are masked before embedding (needed for the API backend; applied to
-  local too for one code path). The full text stays only in the local SQLite file under `output/` (git-ignored).
+- **PDPA:** chunk text and the user's question go through `masking.privacy_guard` (incl. names and street
+  addresses, see "PR #13 review fixes" below) before embedding (needed for the API backend; applied to local too for
+  one code path). The full text stays only in the local SQLite file under `output/` (git-ignored).
 - **Cost control:** API vectors are cached in SQLite by sha256(model + masked text); a rebuild embeds only new or
   changed chunks. Local vectors are recomputed each build (free, < 2 s). **Stale guard:** if the ingest outputs
   change, search reports `INDEX_STALE` and uses keyword until `build_index` is rerun.
@@ -48,11 +49,42 @@ API embedding model is one setting away (`A_EMBED_MODEL=text-embedding-3-small`)
 
 ## Checks
 
-- 89 unit tests pass (19 for the index: build, cache reuse, masking of what is sent, kind filter, threshold,
+- 89 unit tests passed at first push (now 106, see "PR #13 review fixes"; 19 for the index at first push: build, cache reuse, masking of what is sent, kind filter, threshold,
   stale refusal, exact email citations from vector hits, order filter, fallbacks on endpoint failure / no index /
   no faiss / missing local model file, keyword mode never embeds, local typo tolerance, determinism).
 - Evals: **21/21 pass** on the real data. A-E19..A-E21 now test typo tolerance and "no rule" for an unrelated
   question.
+
+## PR #13 review fixes (17 Nov, John's review)
+
+**P1 — names and street addresses reached the API embedder.** `mask_text` only hid emails, phones, NRIC, unit,
+postal and block; "Jane Tan" and "123 Orchard Road" went out as typed (reproduced). Fix:
+- New `masking.privacy_guard()` = `mask_text` + street addresses + personal names. It covers titles (Mr/Mdm/Dr),
+  patronymics (bin/binte/s/o), cues ("my name is", "Regards,", "Dear", "Customer:"), common Singapore given names
+  and surnames in either order, and street forms ("123 Orchard Road", "Tampines St 11", "Ang Mo Kio Central",
+  "Jalan Bukit Merah").
+- It is applied to every chunk and every query before embedding, and **again inside the API embedder** right before
+  the request, so a future caller cannot skip it. Idempotent, so the double pass changes nothing.
+- Measured on the real data: **526/526** distinct customer/driver names and **25,833/25,833** order addresses fully
+  masked. 0 of the 102 indexed chunks change, so retrieval on the real data is unchanged (same rankings as before
+  on the sample questions; evals 21/21).
+- The local embedder ignores the `[NAME]`/`[ADDRESS]` placeholders, so a masked street does not look like the word
+  "address" and pull results towards the "Wrong address" rule.
+- **Limit:** rule-based. A name with no title, no cue and not on the lists (e.g. a lone foreign first name) can still
+  pass. The default embedder is local, so nothing leaves the machine unless `A_EMBED_MODEL` is set.
+
+**P2 — a damaged index crashed search instead of falling back.** A half-written FAISS file raised a raw
+`RuntimeError` (reproduced). Fix:
+- Every way the index files can be bad now ends in `VectorUnavailable`, so hybrid falls back to keyword and says why:
+  `INDEX_CORRUPT` (partial/unreadable FAISS, SQLite or local-model file, files from different builds, vector count
+  ≠ chunk count), `INDEX_STALE` (older index format, or a query vector of the wrong size).
+- Writes are safe: SQLite is one transaction; the FAISS and local-model files are written to a temp file, flushed
+  and swapped in with `os.replace`. SQLite records the sha256 of both files, so a crash between the two steps is
+  detected (`INDEX_CORRUPT`) instead of mapping vectors to the wrong citations. A failed write is `INDEX_WRITE_FAILED`.
+- Index format is now `a-vec-2`. **Anyone with an older index: rerun `python -m backend.unstructured.build_index`**
+  (free with the local model). Until then search says `keyword (fallback: INDEX_STALE)`.
+
+Tests: 106 pass (17 new: 5 guard, 3 guard-in-index incl. the API boundary, 9 damaged-file and atomic-write cases).
 
 ## Team API key: out of credit (found 17 Nov)
 
