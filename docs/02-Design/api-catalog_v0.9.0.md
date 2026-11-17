@@ -2,7 +2,7 @@
 
 - **Version:** 0.9.0
 - **Updated:** 17 Nov 2026 (SGT). 
-- **Status:** draft design specification; HTTP routes and new service signatures require implementation and contract agreement.
+- **Status:** design specification with a staged implementation. HTTP-01–03 and health are implemented; production structured lookup, complete assessment/answer orchestration and weekly reporting remain pending. Integration decisions and checks are recorded in the [complaint/session handoff](../03-Handoffs/John_2026-11-17-complaint-session-api.md).
 
 One Python HTTP API connects the React screens to internal SQL, file-backed evidence and RAG services. Existing Python tools are identified separately from proposed interfaces; this document does not claim the backend or demo acceptance checks are complete.
 
@@ -10,10 +10,10 @@ One Python HTTP API connects the React screens to internal SQL, file-backed evid
 
 | Boundary | Release design |
 |---|---|
-| Browser → backend | Six JSON endpoints under `/api`; one API service. FastAPI + Pydantic + Uvicorn is the recommended implementation stack, not an installed or frozen dependency choice. |
+| Browser → backend | Six JSON endpoint contracts under `/api`; one FastAPI + Pydantic + Uvicorn service with pinned runtime requirements. Four endpoints are implemented; both weekly endpoints remain planned. |
 | Backend → data services | Python function calls for identity, SQL/GPS, evidence retrieval, rates and policy. Internal tools are not additional browser endpoints. |
 | Preparation | Separate commands for initial database creation/seeding, case transformation, image/text ingestion and index publication. HTTP requests never trigger dataset reloads or paid image extraction. |
-| Storage | MySQL operational/case tables and weekly views; four JSONL evidence files; GPS/reference files; optional semantic index; proposed local SQLite sessions. |
+| Storage | MySQL operational/case tables and weekly views; four JSONL evidence files; GPS/reference files; optional semantic index; implemented local SQLite sessions. |
 | Deployment | Local assessed demo. Authentication is not implemented; session IDs identify conversations, not authenticated users. Public access and user-access controls require a separate design. |
 | Effects | Recommendations only. No refund execution, customer messaging, operational edits, arbitrary SQL endpoint or ingestion/upload/admin API. Saving conversation state does not create a canonical complaint in weekly reporting. |
 
@@ -26,7 +26,7 @@ One Python HTTP API connects the React screens to internal SQL, file-backed evid
 
 ## 2. HTTP endpoint catalog
 
-All six HTTP handlers are **proposed**, with no HTTP server found in the reviewed checkout. Five have frontend call functions; health is declared in the route map but has no current screen caller.
+The complaint submission, session messages, session retrieval and health handlers are implemented. The complaint service uses an injectable structured-provider boundary; its default returns an explicit unavailable error until B's live lookup is connected. It gathers cached A POD/policy evidence after identity resolution and abstains from unsupported recommendations. Both weekly handlers remain proposed. Five contracts have frontend call functions; health is declared in the route map but has no current screen caller.
 
 | ID | Method and path | Request | Response / purpose |
 |---|---|---|---|
@@ -40,6 +40,8 @@ All six HTTP handlers are **proposed**, with no HTTP server found in the reviewe
 ### HTTP-01 — submit a complaint
 
 `email_text` is a nonblank string. Omitted/null `session_id` creates a conversation; an existing ID refers to that complaint context and must not silently overwrite another session. Normal follow-ups use HTTP-02; a supplied unknown session returns `404 SESSION_NOT_FOUND`.
+
+Current implementation limits the complaint to 20,000 characters and returns `409 SESSION_CONFLICT` for an existing session submitted here; continue through HTTP-02 instead. Missing order references produce saved clarification without a lookup. Original complaint/follow-up text is withheld from persistence and responses because arbitrary personal names cannot yet be masked reliably; safe structured turn markers are stored instead.
 
 ```json
 {"email_text":"Please investigate delivery for order 99999.","session_id":null}
@@ -65,7 +67,7 @@ Keep the session ID, append the turn, preserve evidence/conflicts and re-run onl
 
 Return the last saved result, workflow state and sanitised message history; preserve candidate choices, citations and limitations. `messages` contains `{role: "user" | "assistant", text: string}` records, with optional timestamps. Recovery itself does not repeat model calls or ingestion. Unknown sessions return `404 SESSION_NOT_FOUND`.
 
-The browser remembers only the last session ID in `localStorage`. Backend state must survive a process restart in the proposed SQLite store; the mock's `sessionStorage` is not evidence of server persistence. Keep sessions isolated; a source-version change must not silently relabel old evidence as current.
+The browser remembers only the last session ID in `localStorage`. Backend state survives a process restart in the implemented SQLite store; the mock's `sessionStorage` is not evidence of server persistence. Sessions remain isolated, concurrent updates use compare-and-swap, and recovery preserves saved source fingerprints. Candidate selection revalidates the structured source version and returns `409 SOURCE_CHANGED` if it no longer agrees with the saved context.
 
 ### HTTP-04 / HTTP-05 — weekly reporting
 
@@ -81,7 +83,7 @@ The proposed week is Monday–Sunday SGT by complaint Date Opened, subject to fi
 
 Proposed fields: `request_id`, `status` (`ok`, `degraded`, `failed`), safe dependency states and per-feature availability for `triage`, `weekly`, `sessions` and semantic retrieval. A disabled optional semantic index is distinct from a failed dependency. Use `200` for healthy/degraded service with usable features and `503` when the application cannot serve its core features; never expose credentials, raw database exceptions or client records.
 
-Feature readiness may come from this endpoint or explicit frontend configuration; neither mechanism is implemented yet. Health checks must not pay for image extraction, embeddings or answer generation.
+Health currently exposes per-feature flags: sessions are available; triage reflects whether a structured provider is configured; weekly and semantic retrieval remain unavailable. This configuration signal is not a live dependency probe or proof of completed resolution assessment. D's per-feature configuration/profile changes remain pending. Health checks must not pay for image extraction, embeddings or answer generation.
 
 ## 3. Shared response contracts
 
@@ -126,6 +128,7 @@ HTTP status describes request handling; body `status` describes the complaint ou
 | `200` | Completed domain result, including ambiguity, missing evidence and refusals. A `failed` body is also allowed by the existing draft but must not be treated as normal success. |
 | `422` | Invalid request fields, blank input or malformed date/identity: `VALIDATION_ERROR`. |
 | `404` | Missing session or reporting coverage: `SESSION_NOT_FOUND`, `NO_DATA`. |
+| `409` | Existing-session resubmission/concurrent turn: `SESSION_CONFLICT`; changed source context: `SOURCE_CHANGED`. |
 | `503` | Required dependency unavailable: `DEPENDENCY_UNAVAILABLE`. |
 | `504` | Server-side dependency deadline exceeded: `DEPENDENCY_TIMEOUT`. |
 | `500` | Unexpected server failure: `INTERNAL_ERROR`; safe message, no raw exception. |
@@ -135,6 +138,8 @@ HTTP status describes request handling; body `status` describes the complaint ou
 ```
 
 The current client aborts after 45 seconds and creates local `TIMEOUT` or `NETWORK` errors without an HTTP response. Align server/tool budgets with that deadline; the existing offline vision client's longer timeout is not the live-request budget. Bound retries and retry only eligible failures; final limits, input-size limits and POST retry deduplication/idempotency remain implementation decisions. A browser timeout does not prove the server stopped or that a repeated model call is free.
+
+The complaint/session increment uses a five-second per-call timeout by default (configurable up to 15 seconds), at most two external tool stages per request, and four bounded worker slots per app. A timed-out call retains its slot until the provider finishes; providers must enforce their own I/O deadline. The service performs no automatic retries or model calls. Follow-ups are limited to 10,000 characters. POST deduplication remains pending, so do not automatically replay submissions after a network timeout.
 
 ### 3.3 Citation
 
@@ -242,9 +247,9 @@ Image extraction caches by image hash + prompt version + model; unchanged inputs
 
 1. **Policy category + query:** current keyword filtering can discard a valid category rule. Until fixed, use the exact category path without an unrelated query; the target retains category matches independently of lexical overlap.
 2. **Rate expiry:** current retrospective fallback can reuse an explicitly expired card after its end date. The target respects end dates and limits back-dating to authorised earlier dates/source scope.
-3. **POD status/message:** remove the fixed migration-date explanation, permit later matching records and propagate actual extraction failures rather than flattening them into partial evidence.
-4. **Masking/paths:** free-text names need additional coverage; logical refs need configured root resolution. Public citations need source-specific key rendering; original image verification uses local source access until an evidence-viewer contract exists.
-5. **Persistence/API:** current browser mocks are not backend recovery. SQL tools, shared request telemetry, session persistence, answer orchestration and optional embeddings remain unimplemented.
+3. **POD status/message:** the HTTP evidence adapter now uses dataset-based absence wording, accepts later matching records and preserves extraction failure. The underlying A helper's fixed migration-date explanation/status mapping still needs its upstream fix.
+4. **Masking/paths:** the HTTP adapter now verifies original sources under a configured root and withholds arbitrary free text/known personal fields. Reliable free-text name masking remains pending. Public citations still need D's source-specific key rendering; original verification uses local source access until an evidence-viewer contract exists.
+5. **Persistence/API:** the three complaint/session routes now persist sanitised state in SQLite and provide correlated request/tool logs. Recovery reads the saved snapshot without rerunning tools. Live SQL/GPS tools, complete rate/policy assessment, answer-model orchestration, durable telemetry/spend consolidation and optional embeddings remain pending; browser mocks still do not prove backend recovery.
 
 ## 7. Frontend integration and acceptance
 
@@ -266,9 +271,9 @@ Apply this per feature, preserve usable features when another fails, and clear o
 
 | Decision | Proposed position / remaining agreement |
 |---|---|
-| HTTP contract freeze | Adopt the six existing client paths and display-ready result fields; confirm validation limits, transport mappings and framework choice before implementation. |
+| HTTP contract freeze | Six client paths remain the contract; FastAPI and complaint/session schemas, limits and error mappings are implemented. Obtain consumer agreement on the recorded implementation decisions and complete both weekly routes. |
 | Reporting definitions | Agree Mon–Sun/Date Opened rules, canonical-case matching, coverage, guide-gap/approval definitions and nullable metric handling. |
-| Session/retry semantics | Agree retention, isolation/access checks, existing-session submit behaviour, concurrent turns, source-version changes and POST deduplication after a timeout. |
+| Session/retry semantics | SQLite isolation, conflict responses, existing-session submit rejection and source-version selection checks are implemented. Retention, future access controls and POST deduplication after a timeout remain open. |
 | Readiness / source selection | Agree per-feature configuration and optional health capability fields; implement the reviewed demo/live matrix. |
 | Evidence viewing | Confirm whether on-page locators plus local source verification suffice for the demo, or define a controlled original-evidence viewer. |
 | Semantic retrieval | Confirm permitted embedding capability/model, versions, relevance benefit, failure policy and publish/rebuild procedure; lexical retrieval remains available. |

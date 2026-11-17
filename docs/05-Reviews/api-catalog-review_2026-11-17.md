@@ -1,6 +1,8 @@
 # API catalog — handoff coverage review
 
-**Reviewed:** 17 Nov 2026 (SGT). **Review count:** one manual coverage pass after the draft was written. **Artifact:** [API catalog](../02-Design/api-catalog.md).
+**Reviewed:** 17 Nov 2026 (SGT). **Review count:** one manual coverage pass after the draft was written. **Artifact:** [API catalog](../02-Design/api-catalog_v0.9.0.md).
+
+**Later implementation follow-up, 17 Nov:** the original coverage review below predates the complaint/session increment. HTTP-01–03, health and SQLite recovery are now implemented and checked locally; B's production provider, complete assessment/answer orchestration and weekly reporting remain pending. The catalog's implementation status has been updated. See the new [implementation plan](../03-Handoffs/John_2026-11-17-complaint-session-api-plan.md) and [verified consumer handoff](../03-Handoffs/John_2026-11-17-complaint-session-api.md); the original seven-handoff count and pending-implementation paragraphs below describe the earlier review snapshot.
 
 ## Result
 

@@ -7,10 +7,10 @@ Run setup from **`team2_merlion_express/`**, the folder containing `backend/`, `
 | Service | Local address | Current behaviour |
 |---|---|---|
 | MySQL | `127.0.0.1:3306` | Reuse an existing local server; otherwise start the MySQL 8 Compose service with its durable volume. First Docker startup may download the image. |
-| Python API | `http://127.0.0.1:8000` | FastAPI/Pydantic/Uvicorn bootstrap; `/api/health`, `/docs`, `/openapi.json`. Domain APIs remain pending. |
+| Python API | `http://127.0.0.1:8000` | Complaint submission, follow-up/candidate selection, SQLite recovery, `/api/health`, `/docs` and `/openapi.json`. B's live structured provider remains pending. |
 | React/Vite | `http://127.0.0.1:5173` | Existing complaint, weekly and explainer screens, using synthetic mock data by default. |
 
-`/api/health` reports `status: degraded` and false feature flags: process liveness is not proof of working triage, reports, persistence, database readiness or model access. There are no fabricated complaint/weekly responses. SQLite session storage is a design target, not implemented by this bootstrap.
+`/api/health` reports `status: degraded`: sessions are implemented, while triage remains unavailable until B's structured provider is connected. Weekly reporting and semantic retrieval remain unavailable. Ordinary order submissions return `503 DEPENDENCY_UNAVAILABLE` with the default provider; no records are fabricated. SQLite persists sanitised workflow state under ignored `output/api/sessions.sqlite3` (override with `CAPSTONE_SESSION_DB`). Requests without an order reference can clarify, and prohibited requests can refuse, without a database/model call.
 
 ## 2. Install prerequisites once
 
@@ -211,7 +211,7 @@ MySQL deliberately remains available. Stop it without deleting data with `docker
 | Docker check fails | Docker is needed only when no local MySQL is detected or Docker mode was chosen. Start local MySQL and rerun, or start Docker Desktop/check WSL integration. |
 | Port 3306 occupied | Auto mode reuses a responding MySQL server. If the greeting cannot be recognised, investigate that listener; startup does not kill it or start Docker over it. |
 | API/frontend port occupied | Stop the known prior service yourself or choose the port options above. |
-| API health works but triage returns 404 | Expected until complaint/session/weekly handlers are implemented. Use demo mode; `/docs` shows only implemented routes. |
+| API health works but triage returns 503 | Connect B's structured provider through `create_app`; the default provider explicitly reports unavailable. `/docs` exposes the implemented complaint/session routes. Weekly routes still return 404. |
 | MySQL source-table warning | Follow the separate import guide and verify the counts. Case tables/views still require their planned migrations. |
 | Missing evidence warning | Prepare/distribute the approved local outputs using the ingestion guide; health/mock startup does not create evidence. |
 | Script blocked in PowerShell | Use the process-scoped setting above or invoke `start_services.py` directly with the environment's Python. |
@@ -227,11 +227,12 @@ Install the optional testing dependencies into the same environment:
 python -m pip install -r backend/api_service/requirements-dev.txt
 python -m unittest discover -s backend/api_service/tests -v
 python -m unittest discover -s scripts/tests -v
+python -m evals.complaint_api_starter
 ```
 
 In PowerShell use `.\.venv\Scripts\python.exe` in place of `python` if the environment is not activated. Existing ingestion checks remain available separately: `python -m unittest discover -s backend/unstructured/tests -t .`.
 
-These setup files do not implement the remaining [API catalog](../../docs/02-Design/api-catalog_v0.9.0.md) or change existing extraction behaviour. Implementation should preserve the six route contracts, source citations, input/output guards and actual session recovery.
+The complaint/session increment implements HTTP-01–03 and health from the [API catalog](../../docs/02-Design/api-catalog_v0.9.0.md). Live structured lookup, full rate/policy assessment, answer-model orchestration and weekly reporting remain pending. Existing extraction behaviour is unchanged. See the [implementation handoff](../../docs/03-Handoffs/John_2026-11-17-complaint-session-api.md) for the provider contract, decisions and actual verification results.
 
 Validation on macOS: focused API/launcher tests and isolated real Uvicorn/Vite startup, prerequisite checks, occupied-port rejection, Ctrl+C cleanup, live-mode blocking and development-reload cleanup passed. Native PowerShell/WSL execution and a real Docker/MySQL startup were not run here; database start/probe logic was checked with controlled test doubles.
 

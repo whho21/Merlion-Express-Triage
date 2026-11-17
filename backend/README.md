@@ -2,7 +2,9 @@
 
 [Mac, Windows and WSL API setup](api_service/backend_API_setup.md) · [Existing ingestion tools](unstructured/README.md)
 
-The API bootstrap provides `GET /api/health` and interactive documentation at `/docs`. Complaint, reporting, persistent session and semantic-retrieval services remain unimplemented; health reports those capabilities as unavailable. The frontend defaults to its existing synthetic demo mode.
+The API implements complaint submission, follow-up/candidate selection, SQLite session recovery and `GET /api/health`, with interactive documentation at `/docs`. Live order lookup still requires B's structured provider; ordinary order requests return a safe `503` until it is connected. Missing order references can be clarified and prohibited requests refused without that provider. Weekly reporting, automated resolution assessment and semantic retrieval remain pending. The frontend defaults to its existing synthetic demo mode.
+
+See the [complaint/session implementation handoff](../docs/03-Handoffs/John_2026-11-17-complaint-session-api.md) for provider integration, contract decisions and verified checks. No synthetic provider is enabled by default.
 
 ## Environment setup
 
@@ -72,7 +74,7 @@ The launcher checks Python/dependencies, Node/Vite, ports and MySQL availability
 
 Startup never installs dependencies, imports/overwrites SQL, runs paid extraction or kills unrelated processes. Checks always run before any service starts. Logs go to ignored `output/startup/`.
 
-Use `--mysql-mode local` to require local MySQL, `--mysql-mode docker` to force Docker, or `--skip-mysql` to manage the database separately. Use `--no-frontend` for backend-only startup, `--api-port 8001` / `--frontend-port 5174` for port conflicts, or `--reload` for API development. `--frontend-mode live` requires implemented triage, weekly and session capabilities and is deliberately blocked by the current bootstrap.
+Use `--mysql-mode local` to require local MySQL, `--mysql-mode docker` to force Docker, or `--skip-mysql` to manage the database separately. Use `--no-frontend` for backend-only startup, `--api-port 8001` / `--frontend-port 5174` for port conflicts, or `--reload` for API development. `--frontend-mode live` requires triage, weekly and session capabilities together; it remains blocked while weekly reporting and structured lookup are unavailable. Direct API development is available independently.
 
 Dependencies: [runtime](api_service/requirements.txt), [development/testing](api_service/requirements-dev.txt). Scripts resolve the checkout from their own location and use its `.venv`; activation is optional for the launchers.
 
@@ -84,7 +86,11 @@ Use three functional groups. Keep request handling and application logic togethe
 backend/
 ├── README.md
 ├── api_service/
-│   ├── app.py                    # FastAPI entry point; health exists now
+│   ├── app.py                    # FastAPI complaint/session/health routes
+│   ├── models.py                 # Validated request and response contracts
+│   ├── service.py                # Structured-provider boundary and bounded calls
+│   ├── store.py                  # SQLite sessions and concurrent-write checks
+│   ├── evidence.py               # Cached POD/policy adapters and source checks
 │   ├── requirements.txt
 │   ├── requirements-dev.txt
 │   ├── backend_API_setup.md
@@ -125,4 +131,6 @@ backend/
 
 Offline SQL/case/GPS preparation can start in a separate `api_service/prepare.py` command module; HTTP requests must not run ingestion or cleaning. MySQL DDL stays in `database/`, runtime data stays under ignored `data/` and `output/`, and shared startup stays in [`scripts/`](../scripts/README.md).
 
-The entry point is now `uvicorn backend.api_service.app:app`. Only health is implemented; the remaining files above are a layout proposal, not completed API catalog work. See the [API catalog](../docs/02-Design/api-catalog_v0.9.0.md) for contracts.
+The entry point is `uvicorn backend.api_service.app:app`. The three complaint/session routes and health exist; weekly routes and `rag_service/` remain planned. SQLite defaults to ignored `output/api/sessions.sqlite3`; `CAPSTONE_SESSION_DB` overrides the path. Recovery reads saved state without model/tool calls. See the [API catalog](../docs/02-Design/api-catalog_v0.9.0.md) for contracts.
+
+After installing the development dependencies, run `python -m unittest discover -s backend/api_service/tests -v` and `python -m evals.complaint_api_starter`. The starter explicitly injects synthetic data; production startup never uses it. No API request runs ingestion or paid extraction.
