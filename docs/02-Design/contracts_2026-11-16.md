@@ -241,11 +241,12 @@ return the envelope below. `category` (added 17 Nov, optional) returns that comp
 
 **Updated 17 Nov (team decision): hybrid retrieval.** Both tools take `mode="hybrid"` (default) | `"vector"` |
 `"keyword"`; every result carries `retrieval` (`hybrid:keyword+<embed model>`, `vector:<model>`, `keyword`,
-`keyword (fallback: <CODE>)`, `category`, `order_filter`, `all_rules`). Vector side = embeddings of masked text in
+`keyword (fallback: <CODE>)`, `category`, `order_filter`, `all_rules`). Vector side = embeddings of guarded text
+(`masking.privacy_guard`: contact details, street addresses and names removed; PR #13 review) in
 FAISS, chunks + citations in SQLite (`vector_index.py`, handoff `Ralph_2026-11-17-vector-index.md`). Embedding model
 today: `local-tfidf-chargram-v1` (numpy, offline; the API key has no credit); `text-embedding-3-small` via
 `A_EMBED_MODEL` when credit returns. If it is
-unavailable (`NO_FAISS`, `INDEX_MISSING`, `INDEX_STALE`, `EMBED_<HTTP code>`), hybrid falls back to keyword and says
+unavailable (`NO_FAISS`, `INDEX_MISSING`, `INDEX_STALE`, `INDEX_CORRUPT`, `EMBED_<HTTP code>`), hybrid falls back to keyword and says
 so; `mode="vector"` returns `failed` with that code. Hit shapes and citations below are the same in every mode.
 
 Code: `backend/unstructured/search.py`. Each `search_emails` hit:

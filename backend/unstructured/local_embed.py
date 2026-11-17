@@ -13,8 +13,8 @@ The fitted IDF is saved next to the index (local_embed.npz) so queries use exact
 from __future__ import annotations
 
 import hashlib
+import io
 import re
-from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -22,11 +22,13 @@ import numpy as np
 MODEL_NAME = "local-tfidf-chargram-v1"
 DIM = 2 ** 14
 WORD_RE = re.compile(r"[a-z0-9]+")
-NPZ_NAME = "local_embed.npz"
+# Privacy placeholders carry no meaning for matching; "[ADDRESS]" must not look like the word "address" (which
+# would pull every query that mentions a street towards the "Wrong address" rule).
+PLACEHOLDER_RE = re.compile(r"\[(?:NAME|ADDRESS|EMAIL|PHONE|NRIC|UNIT|POSTAL|BLOCK)\]")
 
 
 def _features(text: str) -> List[str]:
-    words = WORD_RE.findall((text or "").lower())
+    words = WORD_RE.findall(PLACEHOLDER_RE.sub(" ", text or "").lower())
     feats = [f"w:{w}" for w in words]
     feats += [f"b:{a}_{b}" for a, b in zip(words, words[1:])]
     for w in words:
@@ -67,12 +69,19 @@ class LocalEmbedder:
         norms[norms == 0] = 1.0
         return (m / norms).tolist(), {"prompt_tokens": 0, "completion_tokens": 0}
 
-    def save(self, folder: Path) -> None:
-        np.savez_compressed(folder / NPZ_NAME, idf=self.idf, dim=np.array([DIM]))
+    def to_bytes(self) -> bytes:
+        """The .npz file content. vector_index writes it atomically and records its sha256."""
+        buf = io.BytesIO()
+        np.savez_compressed(buf, idf=self.idf, dim=np.array([DIM]))
+        return buf.getvalue()
 
     @classmethod
-    def load(cls, folder: Path) -> "LocalEmbedder":
-        data = np.load(folder / NPZ_NAME)
-        if int(data["dim"][0]) != DIM:
-            raise ValueError("local embedder was saved with a different dimension; rebuild the index")
-        return cls(data["idf"])
+    def from_bytes(cls, data: bytes) -> "LocalEmbedder":
+        """Raises ValueError / KeyError / zipfile.BadZipFile / EOFError on a damaged file (no pickles are loaded)."""
+        with np.load(io.BytesIO(data), allow_pickle=False) as npz:
+            if int(npz["dim"][0]) != DIM:
+                raise ValueError("local embedder was saved with a different dimension; rebuild the index")
+            idf = npz["idf"]
+        if idf.shape != (DIM,):
+            raise ValueError(f"local embedder IDF has shape {idf.shape}, expected ({DIM},); rebuild the index")
+        return cls(idf)
