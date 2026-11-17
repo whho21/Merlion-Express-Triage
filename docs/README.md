@@ -37,6 +37,7 @@ docs/
 | [Architecture](02-Design/architecture.md) | `02-Design/` | Document the application architecture. |
 | [Database design](02-Design/database-design_2026-11-16.md) | `02-Design/` | Raw/cleaned strategy, complete proposed table inventory and reconciliation with Ralph's extraction outputs. |
 | [Hosting options](02-Design/hosting-options.md) | `02-Design/` | Compare local course delivery and portfolio hosting; proposed deployment and migration steps. |
+| [API catalog](02-Design/api-catalog.md) | `02-Design/` | Release HTTP endpoints, Python tools, payloads, failures, source rules and implementation status. |
 | [Technical contracts](02-Design/contracts.md) | `02-Design/` | Document agreed interfaces and data contracts. |
 | [Handoff template](03-Handoffs/Name_YYYY-MM-DD-topic.md) | `03-Handoffs/` | Record handoff scope, remaining work and next steps. |
 | [John → Jeffrey: API/mock profiles](03-Handoffs/John_2026-11-17-Jeffrey-api-mock-profiles.md) | `03-Handoffs/` | Requested API source selection, npm profiles and retry fixes for D's next code push. |
