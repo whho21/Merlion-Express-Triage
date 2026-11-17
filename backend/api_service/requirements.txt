@@ -2,3 +2,5 @@
 fastapi==0.163.1
 pydantic==2.14.3
 uvicorn==0.54.0
+# TOOL-05 live structured provider (backend/api_service/sql_provider.py)
+mysql-connector-python==9.5.0
